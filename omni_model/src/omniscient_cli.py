@@ -3,9 +3,12 @@ from omni_model.src.cli_helpers import (
     validate_dataset_choice,
     validate_data_split,
     validate_num_workers,
+    PythonLiteralOption,
 )
 from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.datasets.data import _SUPPORTED_DATASETS
+from omni_model.src.utils.options import DatasetOptions
+from omni_model.src.runner import run
 
 
 @click.group()
@@ -31,9 +34,9 @@ def omniscient_cli():
 @click.option(
     "-ds",
     "--data-split",
-    nargs=3,
     callback=validate_data_split,
-    type=click.Tuple([int, int, int]),
+    cls=PythonLiteralOption,
+    type=int,
     help="Train, val, and test split percentages.",
 )
 @click.option(
@@ -53,7 +56,15 @@ def omniscient_cli():
 def omni_training_cli(
     model_arch, dataset_name, data_split, subset_fraction, batch_size, num_workers
 ):
-    pass
+
+    dataset_options: DatasetOptions = {
+        "dataset_name": dataset_name,
+        "data_split": data_split,
+        "subset_fraction": subset_fraction,
+        "batch_size": batch_size,
+        "num_workers": num_workers,
+    }
+    run(dataset_options)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,8 @@
+import pathlib
+from typing import Tuple, Union
+from torch.utils import data
 import torchvision.transforms as transforms
+from omni_model.src.utils.options import DatasetOptions
 from omni_model.src import DATA_ROOT as _DATA_ROOT
 
 _TRAIN = "train"
@@ -41,3 +45,21 @@ _TRANSFORMS = {
         ),
     }
 }
+
+
+class BaseDataset(data.Dataset):
+    def __init__(
+        self,
+        dataset_name: str,
+        data_split: Tuple[int, int, int],
+        subset_fraction: float,
+        batch_size: int,
+        num_workers: int,
+    ):
+        print(dataset_name)
+        self.dataset_name = dataset_name
+        self.data_split = data_split
+        self.transforms = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]]
+        self.dataset_root = _SUPPORTED_DATASETS[dataset_name]
+        self.batch_size = batch_size
+        self.num_workers = num_workers
