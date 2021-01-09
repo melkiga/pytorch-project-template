@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "python-template"
+name = "Omni Model"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <No Email Provided>"]
+authors = ["Gabriella Melki <gabriellamelki@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
