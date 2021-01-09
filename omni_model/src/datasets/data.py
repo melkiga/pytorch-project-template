@@ -63,3 +63,62 @@ class BaseDataset(data.Dataset):
         self.dataset_root = _SUPPORTED_DATASETS[dataset_name]
         self.batch_size = batch_size
         self.num_workers = num_workers
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self):
+        pass
+
+    def split_data(self):
+        pass
+
+    def get_classes(self):
+        pass
+
+    def subset_data(self):
+        pass
+
+
+class RandomDataset(BaseDataset):
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self):
+        pass
+
+
+class ImageDataset(BaseDataset):
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self):
+        pass
+
+
+class CIFAR10Dataset(BaseDataset):
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self):
+        pass
+
+
+class CIFAR100Dataset(BaseDataset):
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self):
+        pass
