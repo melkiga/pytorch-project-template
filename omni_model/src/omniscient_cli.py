@@ -107,6 +107,7 @@ def download_data(dataset_root, dataset_name, url):
     help="Optimizer class to use.",
 )
 @click.option("-lr", "--learning-rate", type=float, help="Learning rate.")
+@click.option("-e", "--num-epochs", type=int, help="Learning rate.")
 def train(
     model_arch,
     dataset_name,
@@ -119,17 +120,20 @@ def train(
     pretrained,
     optimizer,
     learning_rate,
+    num_epochs,
 ):
 
     dataset_options: DatasetOptions = {
         "dataset_name": dataset_name,
         "subset_fraction": subset_fraction,
+        "transformation": "DEFAULT",
     }
 
     device_options: DeviceOptions = {"use_gpu": use_gpu, "gpu_number": gpu_number}
     trainer_options: TrainerOptions = {
         "model_arch": model_arch,
         "pretrained": pretrained,
+        "num_epochs": num_epochs,
     }
 
     # TODO: add other args

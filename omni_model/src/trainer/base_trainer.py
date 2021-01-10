@@ -7,8 +7,8 @@ class BaseTrainer:
         self,
         model,
         optimizer,
-        criterion=None,  # TODO: undo none
-        data_loaders=None,  # TODO: undo none
+        criterion,
+        data_loaders,
         log_interval=None,
         lr_scheduler=None,
         num_epochs=None,
@@ -17,6 +17,7 @@ class BaseTrainer:
         self.data_loaders = data_loaders
         self.num_epochs = num_epochs
         self.optimizer = optimizer
+        self.criterion = criterion
 
     def tune(self):
         # TODO: logging + metrics etc

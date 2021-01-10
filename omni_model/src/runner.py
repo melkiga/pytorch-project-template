@@ -8,7 +8,7 @@ from omni_model.src.utils.options import (
     OptimizerOptions,
 )
 from omni_model.src.data.datasets import CIFAR10Dataset, DataLoaderWrapper
-from omni_model.src.trainer.base_trainer import BaseTrainer
+from omni_model.src.trainer.omni_trainer import OmniTrainer
 from omni_model.src.data.dataset_helpers import download_and_extract_archive
 from omni_model.src.omni_model import OmniModel
 from typing import Optional
@@ -62,27 +62,28 @@ def run(
     for key in ModelOptions.__optional_keys__:
         if key in trainer_options:
             model_options[key] = trainer_options.pop(key)
-    model = OmniModel(**model_options)
+    model = OmniModel(**model_options, device=device, num_classes=dataset.num_classes)
+    if device_options["use_gpu"]:
+        model = model.cuda(device)
 
     optim = optimizer_options["optimizer"](
         params=model.parameters(), lr=optimizer_options["learning_rate"]
     )
-    # model includes a network, a criterion and a metric
-    # model can register engine hooks (begin epoch, end batch, end batch, etc.)
-    # (example: "calculate mAP at the end of the evaluation epoch")
-    # note: model can access to datasets using engine.dataset
 
     # setup training params
-    trainer = BaseTrainer(
+    trainer = OmniTrainer(
         model=model,
         data_loaders=data_loader_wrapper,
         optimizer=optim,
+        criterion=torch.nn.CrossEntropyLoss(),
         **trainer_options,
     )
 
     # setup logger
 
     # setup metrics
+
+    # trainer.tune()
 
     # TODO: set up a visualizer for pretty plots
 
