@@ -55,12 +55,6 @@ class TestCIFAR10Dataset:
         assert len(dataset.class_names) == 10
         assert len(dataset) == 10000
 
-    @pytest.mark.skip()
-    def test_cifar10dataset_downloads(self, cifar10dataset):
-        dataset = cifar10dataset(
-            dataset_name="CIFAR10", subset_fraction=1.0, download=True
-        )
-
     def test_cifar_getitem(self, cifar10dataset):
         dataset = cifar10dataset(
             dataset_name="CIFAR10", subset_fraction=1.0, transformation="DEFAULT"
