@@ -1,11 +1,10 @@
 # TODO: https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 from omni_model.src.utils.options import DatasetOptions
-from omni_model.src.data.datasets import BaseDataset
+from omni_model.src.data.datasets import CIFAR10Dataset
 
 
 def run(dataset_options: DatasetOptions = None):
-    print(dataset_options)
-    dataset = BaseDataset(**dataset_options)
+    dataset = CIFAR10Dataset(**dataset_options)
 
     # TODO: load parameters
 

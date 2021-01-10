@@ -14,7 +14,20 @@ class TransformOptions(TypedDict):
 class DatasetOptions(TypedDict):
     dataset_name: str
     subset_fraction: float
+
+
+class CIFARDatasetOptions(DatasetOptions, total=False):
+    download: bool
+    transformation: Any
+    is_training: bool
+
+
+class DataLoaderOptions(TypedDict):
+    dataset_name: str
+    subset_fraction: float
     data_split: Tuple[int, int, int]
+    is_training: bool
+    download: bool
     num_workers: int
     batch_size: int
 

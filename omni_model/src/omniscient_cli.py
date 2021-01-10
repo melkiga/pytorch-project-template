@@ -67,14 +67,11 @@ def omni_training_cli(
     gpu_number,
 ):
 
-    dataset_options: DatasetOptions = {
+    dataset_options: CIFARDatasetOptions = {
         "dataset_name": dataset_name,
-        "data_split": data_split,
         "subset_fraction": subset_fraction,
-        "batch_size": batch_size,
-        "num_workers": num_workers,
     }
-    # run(dataset_options)
+    run(dataset_options)
 
 
 if __name__ == "__main__":

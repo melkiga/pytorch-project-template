@@ -179,13 +179,14 @@ class CIFAR10Dataset(BaseDataset):
 
     def __init__(
         self,
+        dataset_name: str,
         subset_fraction: float,
         transformation: Optional[TransformOptions] = None,
         is_training: bool = BaseDataset.is_training,
         download: bool = False,
     ):
         super().__init__(
-            dataset_name=_CIFAR10,
+            dataset_name=dataset_name,
             subset_fraction=subset_fraction,
             is_training=is_training,
             transformation=transformation,
