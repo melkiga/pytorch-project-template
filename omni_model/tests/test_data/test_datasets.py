@@ -50,3 +50,6 @@ class TestCIFAR10Dataset:
         assert (
             dataset.transformation == _TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID]
         )
+
+    def test_cifar10dataset_downloads(self, cifar10dataset):
+        dataset = cifar10dataset(subset_fraction=1.0, download=True)

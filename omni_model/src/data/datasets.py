@@ -12,9 +12,14 @@ from omni_model.src.data.dataset_helpers import (
     _CIFAR10,
     _EXAMPLE,
 )
+from omni_model.src.data.dataset_helpers import (
+    check_integrity,
+    download_and_extract_archive,
+)
 
 
 class BaseDataset(ABC):
+    _repr_indent = 4
     samples: List[Any] = []
     labels: List[int] = []  # TODO: define set of types for labels (int, bbox, etc)
     class_names: List[str] = []
@@ -54,6 +59,26 @@ class BaseDataset(ABC):
 
     def subset_data(self):
         raise NotImplementedError
+
+    def __repr__(self) -> str:
+        head = "Dataset " + self.__class__.__name__
+        body = ["Number of datapoints: {}".format(self.__len__())]
+        if self.dataset_root is not None:
+            body.append("Root location: {}".format(self.dataset_root))
+        body += self.extra_repr().splitlines()
+        if hasattr(self, "transformation") and self.transformation is not None:
+            body += [repr(self.transformation)]
+        lines = [head] + [" " * self._repr_indent + line for line in body]
+        return "\n".join(lines)
+
+    def _format_transform_repr(self, transform: Callable, head: str) -> List[str]:
+        lines = transform.__repr__().splitlines()
+        return ["{}{}".format(head, lines[0])] + [
+            "{}{}".format(" " * len(head), line) for line in lines[1:]
+        ]
+
+    def extra_repr(self) -> str:
+        return ""
 
 
 class BaseDataLoader(ABC):
@@ -167,6 +192,7 @@ class CIFAR10Dataset(BaseDataset):
         subset_fraction: float,
         transformation: Optional[TransformOptions] = None,
         is_training: bool = BaseDataset.is_training,
+        download: bool = False,
     ):
         super().__init__(
             dataset_name=_CIFAR10,
@@ -175,11 +201,37 @@ class CIFAR10Dataset(BaseDataset):
             transformation=transformation,
         )
 
+        if download:
+            self.download()
+
+        if not self._check_integrity():
+            raise RuntimeError(
+                "Dataset not found or corrupted."
+                + " You can use download=True to download it"
+            )
+
     def __len__(self):
         pass
 
     def __getitem__(self):
         pass
+
+    def _check_integrity(self) -> bool:
+        root = self.dataset_root
+        for fentry in self.train_list + self.test_list:
+            filename, md5 = fentry[0], fentry[1]
+            fpath = root / self.base_folder / filename
+            if not check_integrity(str(fpath), md5):
+                return False
+        return True
+
+    def download(self) -> None:
+        if self._check_integrity():
+            print("Files already downloaded and verified")
+            return
+        download_and_extract_archive(
+            self.url, str(self.dataset_root), filename=self.filename, md5=self.tgz_md5
+        )
 
 
 class CIFAR100Dataset(BaseDataset):
