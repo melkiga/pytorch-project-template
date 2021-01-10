@@ -6,6 +6,8 @@ from omni_model.src.cli_helpers import (
     PythonLiteralOption,
     validate_device,
     validate_dataset_root,
+    NotRequiredIf,
+    _DOWNLOAD_DATA_URLS,
 )
 from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
@@ -28,10 +30,25 @@ def omniscient_datasets():
     "--dataset-root",
     type=str,
     callback=validate_dataset_root,
-    help=f"Path to download data.",
+    help="Path to download data.",
 )
-def download_data(dataset_root):
-    url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
+@click.option(
+    "--dataset-name",
+    type=click.Choice([*_DOWNLOAD_DATA_URLS], case_sensitive=True),
+    cls=NotRequiredIf,
+    not_required_if="url",
+    help="Download from supported url list instead of URL.",
+)
+@click.option(
+    "--url",
+    type=str,
+    cls=NotRequiredIf,
+    not_required_if="dataset_name",
+    help="URL to dataset file.",
+)
+def download_data(dataset_root, dataset_name, url):
+    if dataset_name is not None:
+        url = _DOWNLOAD_DATA_URLS[dataset_name]
     download(dataset_root, url)
 
 

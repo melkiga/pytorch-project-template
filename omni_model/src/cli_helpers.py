@@ -1,9 +1,13 @@
 import click
 import os
 import pathlib
-from omni_model.src.data.datasets import _SUPPORTED_DATASETS
+from omni_model.src.data.datasets import _SUPPORTED_DATASETS, _CIFAR10
 import torch
 import ast
+
+_DOWNLOAD_DATA_URLS = {
+    _CIFAR10: "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
+}
 
 
 class PythonLiteralOption(click.Option):
@@ -20,6 +24,34 @@ def validate_dataset_root(ctx, param, value):
         raise click.BadParameter(f"Invalid dataset path {value}. Path does not exist.")
     else:
         return value
+
+
+class NotRequiredIf(click.Option):
+    # https://stackoverflow.com/questions/44247099/click-command-line-interfaces-make-options-required-if-other-optional-option-is
+    def __init__(self, *args, **kwargs):
+        self.not_required_if = kwargs.pop("not_required_if")
+        assert self.not_required_if, "'not_required_if' parameter required"
+        kwargs["help"] = (
+            kwargs.get("help", "")
+            + " NOTE: This argument is mutually exclusive with %s"
+            % self.not_required_if
+        ).strip()
+        super(NotRequiredIf, self).__init__(*args, **kwargs)
+
+    def handle_parse_result(self, ctx, opts, args):
+        we_are_present = self.name in opts
+        other_present = self.not_required_if in opts
+
+        if other_present:
+            if we_are_present:
+                raise click.UsageError(
+                    "Illegal usage: `%s` is mutually exclusive with `%s`"
+                    % (self.name, self.not_required_if)
+                )
+            else:
+                self.prompt = None
+
+        return super(NotRequiredIf, self).handle_parse_result(ctx, opts, args)
 
 
 def validate_device(ctx, param, value):
