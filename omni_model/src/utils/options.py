@@ -10,10 +10,6 @@ class BaseOptions(TypedDict):
     placeholder: None
 
 
-class TransformOptions(TypedDict):
-    transform: Union[str, None, Callable[[List[Any]], transforms.Compose]]
-
-
 class RequiredDatasetOptions(TypedDict):
     dataset_name: str
 
