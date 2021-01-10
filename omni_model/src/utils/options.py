@@ -1,5 +1,9 @@
 from typing import TypedDict, Tuple, Union, Callable, List, Any
+from torch.optim import SGD, Adam
 from torchvision import transforms
+
+_SUPPORTED_OPTIMIZERS = {"SGD": SGD, "ADAM": Adam}
+import torch
 
 # TODO: fill this with base option as base class
 class BaseOptions(TypedDict):
@@ -40,9 +44,25 @@ class ModelOptions(RequiredModelOptions, total=False):
     pretrained: Union[str, bool]
 
 
-class OptimizerOptions(TypedDict):
-    optimizer_name: str
+class RequiredOptimizerOptions(TypedDict):
+    optimizer: torch.optim.Optimizer
     learning_rate: float
+
+
+class SGDOptimizerOptions(RequiredOptimizerOptions, total=False):
+    momentum: float
+    dampening: float
+    nesterov: bool
+
+
+class AdamOptimizerOptions(RequiredOptimizerOptions, total=False):
+    betas: Tuple[float, float]
+    eps: float
+    amsgrad: bool
+
+
+class OptimizerOptions(SGDOptimizerOptions, AdamOptimizerOptions, total=False):
+    weight_decay: float
 
 
 class SchedulerOptions(TypedDict):

@@ -4,6 +4,8 @@ from omni_model.src.utils.options import (
     DatasetOptions,
     DeviceOptions,
     TrainerOptions,
+    OptimizerOptions,
+    _SUPPORTED_OPTIMIZERS,
 )
 from omni_model.src.runner import run
 
@@ -24,6 +26,11 @@ trainer_options: TrainerOptions = {
     "num_classes": 5,
 }
 
+optimizer_options: OptimizerOptions = {
+    "optimizer": _SUPPORTED_OPTIMIZERS["SGD"],
+    "learning_rate": 0.001,
+}
+
 
 def test_run():
-    run(dataset_options, device_options, trainer_options)
+    run(dataset_options, device_options, trainer_options, optimizer_options)

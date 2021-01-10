@@ -5,6 +5,7 @@ from omni_model.src.utils.options import (
     TrainerOptions,
     ModelOptions,
     DataLoaderOptions,
+    OptimizerOptions,
 )
 from omni_model.src.data.datasets import CIFAR10Dataset, DataLoaderWrapper
 from omni_model.src.trainer.base_trainer import BaseTrainer
@@ -28,6 +29,7 @@ def run(
     dataset_options: DatasetOptions = None,
     device_options: DeviceOptions = None,
     trainer_options: TrainerOptions = None,
+    optimizer_options: OptimizerOptions = None,
 ):
 
     # TODO: load parameters
@@ -62,13 +64,18 @@ def run(
             model_options[key] = trainer_options.pop(key)
     model = OmniModel(**model_options)
 
+    optim = optimizer_options["optimizer"](
+        params=model.parameters(), lr=optimizer_options["learning_rate"]
+    )
     # model includes a network, a criterion and a metric
     # model can register engine hooks (begin epoch, end batch, end batch, etc.)
     # (example: "calculate mAP at the end of the evaluation epoch")
     # note: model can access to datasets using engine.dataset
 
     # setup training params
-    trainer = BaseTrainer(model=model, **trainer_options)
+    trainer = BaseTrainer(
+        model=model, data_loaders=data_loader_wrapper, **trainer_options
+    )
 
     # setup logger
 

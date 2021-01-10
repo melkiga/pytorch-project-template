@@ -11,7 +11,13 @@ from omni_model.src.cli_helpers import (
 )
 from omni_model.src.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
-from omni_model.src.utils.options import DatasetOptions, DeviceOptions, TrainerOptions
+from omni_model.src.utils.options import (
+    DatasetOptions,
+    DeviceOptions,
+    TrainerOptions,
+    OptimizerOptions,
+    _SUPPORTED_OPTIMIZERS,
+)
 from omni_model.src.runner import run, download
 
 
@@ -78,7 +84,7 @@ def download_data(dataset_root, dataset_name, url):
 @click.option(
     "-f",
     "--subset-fraction",
-    type=click.IntRange(0, 1),
+    type=click.FloatRange(0.0, 1.0),
     help="Percentage of dataset to load.",
 )
 @click.option("-b", "--batch-size", type=int, help="Batch size for data loader.")
@@ -95,6 +101,12 @@ def download_data(dataset_root, dataset_name, url):
     "--pretrained/--no-pretrained",
     help="Whether or not to load a model pretrained on ImageNet.",
 )
+@click.option(
+    "--optimizer",
+    type=click.Choice([*_SUPPORTED_OPTIMIZERS], case_sensitive=True),
+    help="Optimizer class to use.",
+)
+@click.option("-lr", "--learning-rate", type=float, help="Learning rate.")
 def train(
     model_arch,
     dataset_name,
@@ -105,6 +117,8 @@ def train(
     use_gpu,
     gpu_number,
     pretrained,
+    optimizer,
+    learning_rate,
 ):
 
     dataset_options: DatasetOptions = {
@@ -118,7 +132,13 @@ def train(
         "pretrained": pretrained,
     }
 
-    run(dataset_options, device_options, **trainer_options)
+    # TODO: add other args
+    optimizer_options: OptimizerOptions = {
+        "optimizer": _SUPPORTED_OPTIMIZERS[optimizer],
+        "learning_rate": learning_rate,
+    }
+
+    run(dataset_options, device_options, trainer_options, optimizer_options)
 
 
 cli = click.CommandCollection(sources=[omniscient_cli, omniscient_datasets])
