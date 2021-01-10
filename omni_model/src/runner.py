@@ -4,8 +4,9 @@ from omni_model.src.utils.options import (
     DeviceOptions,
     TrainerOptions,
     ModelOptions,
+    DataLoaderOptions,
 )
-from omni_model.src.data.datasets import CIFAR10Dataset
+from omni_model.src.data.datasets import CIFAR10Dataset, DataLoaderWrapper
 from omni_model.src.trainer.base_trainer import BaseTrainer
 from omni_model.src.data.dataset_helpers import download_and_extract_archive
 from omni_model.src.omni_model import OmniModel
@@ -38,18 +39,19 @@ def run(
         f"cuda:{device_options['gpu_number']}" if device_options["use_gpu"] else "cpu"
     )
 
-    # engine can train, eval, optimize the model
-    # engine can save and load the model and optimizer
+    # load the dataset and data loader
+    data_loader_options: DataLoaderOptions = {}
+    for key in DataLoaderOptions.__optional_keys__:
+        if key in dataset_options:
+            data_loader_options[key] = dataset_options.pop(key)
 
     if dataset_options["dataset_name"] == "CIFAR10":
         dataset = CIFAR10Dataset(**dataset_options)
     else:
         raise NotImplementedError  # TODO: load dataset
-    # dataset is a dictionary that contains all the needed datasets indexed by modes
-    # (example: dataset.keys() -> ['train','eval'])
+    data_loader_wrapper = DataLoaderWrapper(dataset=dataset, **data_loader_options)
 
     # TODO: load model
-    # TODO: initialize engine
     model_options: ModelOptions = {}
     for key in ModelOptions.__required_keys__:
         if key not in trainer_options:
