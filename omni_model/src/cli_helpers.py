@@ -1,7 +1,7 @@
 import click
 import os
 import pathlib
-from omni_model.src.data.datasets import _SUPPORTED_DATASETS, _CIFAR10
+from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS, _CIFAR10
 import torch
 import ast
 

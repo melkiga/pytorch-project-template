@@ -9,7 +9,7 @@ from omni_model.src.cli_helpers import (
     NotRequiredIf,
     _DOWNLOAD_DATA_URLS,
 )
-from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
+from omni_model.src.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
 from omni_model.src.utils.options import DatasetOptions, DeviceOptions, TrainerOptions
 from omni_model.src.runner import run, download
