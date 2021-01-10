@@ -5,16 +5,34 @@ from omni_model.src.cli_helpers import (
     validate_num_workers,
     PythonLiteralOption,
     validate_device,
+    validate_dataset_root,
 )
 from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
 from omni_model.src.utils.options import DatasetOptions, CIFARDatasetOptions
-from omni_model.src.runner import run
+from omni_model.src.runner import run, download
 
 
 @click.group()
 def omniscient_cli():
     pass
+
+
+@click.group()
+def omniscient_datasets():
+    pass
+
+
+@omniscient_datasets.command()
+@click.option(
+    "--dataset-root",
+    type=str,
+    callback=validate_dataset_root,
+    help=f"Path to download data.",
+)
+def download_data(dataset_root):
+    url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
+    download(dataset_root, url)
 
 
 @omniscient_cli.command()
@@ -56,7 +74,7 @@ def omniscient_cli():
 )
 @click.option("--use-gpu/--no-gpu")
 @click.option("--gpu-number", type=int, callback=validate_device)
-def omni_training_cli(
+def train(
     model_arch,
     dataset_name,
     data_split,
@@ -67,12 +85,16 @@ def omni_training_cli(
     gpu_number,
 ):
 
-    dataset_options: CIFARDatasetOptions = {
+    dataset_options: DatasetOptions = {
         "dataset_name": dataset_name,
         "subset_fraction": subset_fraction,
     }
     run(dataset_options)
 
 
+cli = click.CommandCollection(sources=[omniscient_cli, omniscient_datasets])
+
+
 if __name__ == "__main__":
-    omniscient_cli()
+    cli()
+    # omniscient_cli()

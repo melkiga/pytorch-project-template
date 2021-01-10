@@ -15,9 +15,14 @@ class PythonLiteralOption(click.Option):
             raise click.BadParameter(value)
 
 
+def validate_dataset_root(ctx, param, value):
+    if not pathlib.Path(value).exists():
+        raise click.BadParameter(f"Invalid dataset path {value}. Path does not exist.")
+    else:
+        return value
+
+
 def validate_device(ctx, param, value):
-    print(dir(ctx))
-    print(ctx.params)
     if "use_gpu" not in ctx.params:
         print(
             "WARNING: Option GPU Number cannot be used without setting the `--use-gpu` option. Was this a mistake?"

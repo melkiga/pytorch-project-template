@@ -1,6 +1,18 @@
 # TODO: https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 from omni_model.src.utils.options import DatasetOptions
 from omni_model.src.data.datasets import CIFAR10Dataset
+from omni_model.src.data.dataset_helpers import download_and_extract_archive
+from typing import Optional
+
+
+def download(
+    dataset_root: str,
+    url: str,
+    filename: Optional[str] = None,
+    md5: Optional[str] = None,
+) -> None:
+    # TODO: check if data exists in root.
+    download_and_extract_archive(url, dataset_root, filename=filename, md5=md5)
 
 
 def run(dataset_options: DatasetOptions = None):
