@@ -263,7 +263,7 @@ class CIFAR10Dataset(BaseDataset):
         )
 
     def extra_repr(self) -> str:
-        return "Split: {}".format("Train" if self.train is True else "Test")
+        return "Split: {}".format("Train" if self.is_training is True else "Test")
 
 
 class CIFAR100Dataset(BaseDataset):

@@ -61,4 +61,4 @@ class TestCIFAR10Dataset:
     def test_cifar_getitem(self, cifar10dataset):
         dataset = cifar10dataset(subset_fraction=1.0, transformation="DEFAULT")
         i, (img, target) = enumerate(dataset).__next__()
-        print(img)
+        assert list(img.size()) == [3, 32, 32]
