@@ -74,7 +74,10 @@ def run(
 
     # setup training params
     trainer = BaseTrainer(
-        model=model, data_loaders=data_loader_wrapper, **trainer_options
+        model=model,
+        data_loaders=data_loader_wrapper,
+        optimizer=optim,
+        **trainer_options,
     )
 
     # setup logger
