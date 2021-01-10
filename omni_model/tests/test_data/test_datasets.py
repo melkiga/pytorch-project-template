@@ -4,6 +4,7 @@ from omni_model.src.data.dataset_helpers import (
     _SUPPORTED_DATASETS,
     _TRANSFORMS,
     _DATASET_TO_GROUP,
+    _VALID,
 )
 
 
@@ -33,4 +34,6 @@ def imagedataset():
 class TestImageDataset:
     def test_default_imagedataset_loads(self, imagedataset):
         dataset = ImageDataset(dataset_name="CIFAR10", subset_fraction=1.0)
-        assert dataset.transformation == _TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]]
+        assert (
+            dataset.transformation == _TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID]
+        )

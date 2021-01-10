@@ -6,6 +6,8 @@ from omni_model.src.data.dataset_helpers import (
     _DATASET_TO_GROUP,
     _SUPPORTED_DATASETS,
     _TRANSFORMS,
+    _TRAIN,
+    _VALID,
 )
 
 
@@ -76,7 +78,10 @@ class ImageDataset(BaseDataset):
             subset_fraction=subset_fraction,
             is_training=is_training,
         )
-        self.transformation = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]]
+        phase_transform_type = _TRAIN if self.is_training else _VALID
+        self.transformation = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]][
+            phase_transform_type
+        ]
 
     def __len__(self):
         return len(self.labels)
