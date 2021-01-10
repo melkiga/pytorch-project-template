@@ -1,19 +1,34 @@
 import torch
+import time
 
 
 class BaseTrainer:
     def __init__(
         self,
-        model=None,
-        optimizer=None,  # TODO: undo none
+        model,
+        optimizer,
         criterion=None,  # TODO: undo none
         data_loaders=None,  # TODO: undo none
         log_interval=None,
         lr_scheduler=None,
         num_epochs=None,
     ):
-        print(model)
-        # print(pretrained)
+        self.model = model
+        self.data_loaders = data_loaders
+        self.num_epochs = num_epochs
+        self.optimizer = optimizer
+
+    def tune(self):
+        # TODO: logging + metrics etc
+        for epoch in range(self.num_epochs):
+            epoch_start_time = time.time()
+            self.train_epoch()
+            self.evaluate_epoch()
+
+            # TODO: if model is good, save checkpoint
+            # TODO: logging stuff
+
+        # TODO: if testing, run evaluate
 
     def train_step(self):
         """Implement the training logic for a step."""
@@ -31,9 +46,6 @@ class BaseTrainer:
 
     def evaluate_step(self):
         """Implement the validation logic for a single step."""
-        pass
-
-    def tune(self):
         pass
 
     def adjust_learning_rate(self):
