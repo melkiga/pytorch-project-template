@@ -24,7 +24,7 @@ class OmniModel(nn.Module):
         # cuda_tf=transforms.ToCuda,
         # detach_tf=transforms.ToDetach,
         # criterions=None,
-        # metrics=None, #TODO: add option for is training or not
+        # metrics=None, #TODO: add option for is training or not (feature extracting) https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html
     ):
         super(OmniModel, self).__init__()
         self.model_arch = model_arch
