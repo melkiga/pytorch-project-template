@@ -16,7 +16,7 @@ def omnimodel(scope="package"):
 
 class TestOmniModel:
     def test_default_omnimodel(self, omnimodel):
-        omnimodel(model_arch="resnet18")
+        omnimodel(model_arch="resnet18", pretrained=True)
 
     def test_omnimodel_pretrained_imagenet(self, omnimodel):
         resnet = omnimodel(model_arch="resnet18", pretrained=True)
