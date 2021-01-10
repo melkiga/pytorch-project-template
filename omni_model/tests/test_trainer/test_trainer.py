@@ -1,14 +1,8 @@
 import pytest
 from omni_model.src.trainer.base_trainer import BaseTrainer
 from torch.nn import CrossEntropyLoss
-from torchvision import datasets
-from omni_model.src.data.datasets import (
-    _TRANSFORMS,
-    _DATASET_TO_GROUP,
-    _CIFAR10,
-    _TRAIN,
-)
-from omni_model.tests.test_omni_model import resnet18, optimizer
+from omni_model.tests.test_omni_model import optimizer, omnimodel
+from omni_model.tests.test_data.test_datasets import cifar10dataset
 
 
 @pytest.fixture
@@ -17,15 +11,17 @@ def basetrainer():
 
 
 class TestBaseTrainer:
-    def test_default_trainer(self, basetrainer, resnet18, optimizer):
-        resnet_model = resnet18(pretrained=True)
+    def test_default_trainer(self, basetrainer, omnimodel, optimizer, cifar10dataset):
+        resnet_model = omnimodel(model_arch="resnet18", pretrained=True)
+        dataset = cifar10dataset(
+            dataset_name="CIFAR10",
+            subset_fraction=1.0,
+            is_training=True,
+            transformation="DEFAULT",
+        )
         basetrainer(
-            net=resnet_model,
+            model=resnet_model,
             optimizer=optimizer,
             criterion=CrossEntropyLoss(),
-            data_loaders=datasets.CIFAR10(
-                root="./data",
-                train=True,
-                transform=_TRANSFORMS[_DATASET_TO_GROUP[_CIFAR10]][_TRAIN],
-            ),
+            data_loaders=dataset,
         )

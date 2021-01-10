@@ -37,7 +37,7 @@ class TestImageDataset:
 
 
 @pytest.fixture
-def cifar10dataset():
+def cifar10dataset(scope="package"):
     yield CIFAR10Dataset
 
 
