@@ -154,12 +154,6 @@ class ImageFolderDataset(BaseDataset):
 
 
 class CIFAR10Dataset(BaseDataset):
-    images: Any
-
-    base_folder = "cifar-10-batches-py"
-    url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
-    filename = "cifar-10-python.tar.gz"
-    tgz_md5 = "c58f30108f718f92721af3b95e74349a"
     train_list = [
         ["data_batch_1", "c99cafc152244af753f735de768cd75f"],
         ["data_batch_2", "d4bba439e000b95fd0a9bffe97cbabec"],
@@ -167,7 +161,6 @@ class CIFAR10Dataset(BaseDataset):
         ["data_batch_4", "634d18415352ddfa80567beed471001a"],
         ["data_batch_5", "482c414d41f54cd18b22e5b47cb7c3cb"],
     ]
-
     test_list = [
         ["test_batch", "40351d587109b95175f43aff81a1287e"],
     ]
@@ -183,7 +176,6 @@ class CIFAR10Dataset(BaseDataset):
         subset_fraction: float,
         transformation: Optional[TransformOptions] = None,
         is_training: bool = BaseDataset.is_training,
-        download: bool = False,
     ):
         super().__init__(
             dataset_name=dataset_name,
@@ -192,13 +184,10 @@ class CIFAR10Dataset(BaseDataset):
             transformation=transformation,
         )
 
-        if download:
-            self.download()
-
         if not self._check_integrity():
             raise RuntimeError(
                 "Dataset not found or corrupted."
-                + " You can use download=True to download it"
+                + " Please download the dataset first using the download-data command."
             )
 
         if self.is_training:
@@ -247,21 +236,12 @@ class CIFAR10Dataset(BaseDataset):
         return img, target
 
     def _check_integrity(self) -> bool:
-        root = self.dataset_root
         for fentry in self.train_list + self.test_list:
             filename, md5 = fentry[0], fentry[1]
-            fpath = root / filename
+            fpath = self.dataset_root / filename
             if not check_integrity(str(fpath), md5):
                 return False
         return True
-
-    def download(self) -> None:
-        if self._check_integrity():
-            print("Files already downloaded and verified")
-            return
-        download_and_extract_archive(
-            self.url, str(self.dataset_root), filename=self.filename, md5=self.tgz_md5
-        )
 
     def extra_repr(self) -> str:
         return "Split: {}".format("Train" if self.is_training is True else "Test")
