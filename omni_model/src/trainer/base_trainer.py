@@ -10,7 +10,7 @@ class BaseTrainer:
         data_loaders=None,  # TODO: undo none
         log_interval=None,
         lr_scheduler=None,
-        modelname=None,
+        num_epochs=None,
     ):
         print(model)
         # print(pretrained)
