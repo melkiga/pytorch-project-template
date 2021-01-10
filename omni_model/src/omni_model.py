@@ -30,17 +30,18 @@ class OmniModel(nn.Module):
         if model_arch not in model_names:
             raise ValueError(f"Invalid {model_arch = }. Select from: {model_names}.")
         else:
-            network = getattr(models, model_arch)(pretrained=pretrained)
-        self.layers = nn.ModuleList(network.modules())
+            self.layers = getattr(models, model_arch)(pretrained=pretrained)
+        # self.layers = nn.ModuleList(list(network.modules())[1:])
         # TODO: deal with loading pretrained weights from disk
         # self.criterions = criterions or {}
         # self.metrics = metrics or {}
         self.is_cuda = False
         # self.eval()
 
-    def forward(self, x):
-        for layer in self.layers:
-            x = layer(x)
+    # def forward(self, x):
+    #     for layer in self.layers:
+    #         x = layer(x)
+    #     return x
 
     def eval(self):
         """Activate evaluation mode"""
@@ -52,8 +53,10 @@ class OmniModel(nn.Module):
         super(OmniModel, self).train(mode=True)
         self.mode = "train"
 
-    def load(self):
-        pass
+    def freeze_layers(self):
+        self.eval()
+        for layer in self.parameters():
+            layer.requires_grad = False
 
     def cuda(self, device=None):
         """Moves all model parameters and buffers to the GPU.

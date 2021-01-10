@@ -32,21 +32,23 @@ class DeviceOptions(TypedDict, total=False):
     gpu_number: int
 
 
-class ModelOptions:
-    def __init__(self):
-        pass
+class ModelOptions(TypedDict):
+    model_arch: str
 
 
-class OptimizerOptions:
-    def __init__(self):
-        pass
+class AllModelOptions(ModelOptions, total=False):
+    num_classes: int
+    pretrained: Union[str, bool]
 
 
-class SchedulerOptions:
-    def __init__(self):
-        pass
+class OptimizerOptions(TypedDict):
+    optimizer_name: str
+    learning_rate: float
 
 
-class TrainerOptions:
-    def __init__(self):
-        pass
+class SchedulerOptions(TypedDict):
+    scheduler_name: str
+
+
+class TrainerOptions(AllModelOptions, total=False):
+    num_epochs: int

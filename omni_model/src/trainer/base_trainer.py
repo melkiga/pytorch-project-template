@@ -4,15 +4,16 @@ import torch
 class BaseTrainer:
     def __init__(
         self,
-        net,
-        optimizer,
-        criterion,
-        data_loaders,
+        model=None,
+        optimizer=None,  # TODO: undo none
+        criterion=None,  # TODO: undo none
+        data_loaders=None,  # TODO: undo none
         log_interval=None,
         lr_scheduler=None,
         modelname=None,
     ):
-        pass
+        print(model)
+        # print(pretrained)
 
     def train_step(self):
         """Implement the training logic for a step."""

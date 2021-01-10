@@ -11,7 +11,7 @@ from omni_model.src.cli_helpers import (
 )
 from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
-from omni_model.src.utils.options import DatasetOptions, DeviceOptions
+from omni_model.src.utils.options import DatasetOptions, DeviceOptions, TrainerOptions
 from omni_model.src.runner import run, download
 
 
@@ -91,6 +91,10 @@ def download_data(dataset_root, dataset_name, url):
 )
 @click.option("--use-gpu/--no-gpu")
 @click.option("--gpu-number", type=int, callback=validate_device)
+@click.option(
+    "--pretrained/--no-pretrained",
+    help="Whether or not to load a model pretrained on ImageNet.",
+)
 def train(
     model_arch,
     dataset_name,
@@ -100,6 +104,7 @@ def train(
     num_workers,
     use_gpu,
     gpu_number,
+    pretrained,
 ):
 
     dataset_options: DatasetOptions = {
@@ -108,8 +113,12 @@ def train(
     }
 
     device_options: DeviceOptions = {"use_gpu": use_gpu, "gpu_number": gpu_number}
+    trainer_options: TrainerOption = {
+        "model_arch": model_arch,
+        "pretrained": pretrained,
+    }
 
-    run(dataset_options, device_options)
+    run(dataset_options, device_options, **trainer_options)
 
 
 cli = click.CommandCollection(sources=[omniscient_cli, omniscient_datasets])
