@@ -57,3 +57,8 @@ class TestCIFAR10Dataset:
     @pytest.mark.skip()
     def test_cifar10dataset_downloads(self, cifar10dataset):
         dataset = cifar10dataset(subset_fraction=1.0, download=True)
+
+    def test_cifar_getitem(self, cifar10dataset):
+        dataset = cifar10dataset(subset_fraction=1.0, transformation="DEFAULT")
+        i, (img, target) = enumerate(dataset).__next__()
+        print(img)

@@ -1,6 +1,7 @@
 import pathlib
 from abc import ABC
 from typing import Any, List, Tuple, Union, Optional, Callable
+from PIL import Image
 import pickle
 import numpy as np
 from torchvision import transforms
@@ -236,8 +237,13 @@ class CIFAR10Dataset(BaseDataset):
     def __len__(self):
         return len(self.labels)
 
-    def __getitem__(self):
-        pass
+    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+        img, target = self.images[index], self.labels[index]
+        if self.transformation is not None:
+            img = Image.fromarray(img)
+            img = self.transformation(img)
+
+        return img, target
 
     def _check_integrity(self) -> bool:
         root = self.dataset_root
@@ -255,6 +261,9 @@ class CIFAR10Dataset(BaseDataset):
         download_and_extract_archive(
             self.url, str(self.dataset_root), filename=self.filename, md5=self.tgz_md5
         )
+
+    def extra_repr(self) -> str:
+        return "Split: {}".format("Train" if self.train is True else "Test")
 
 
 class CIFAR100Dataset(BaseDataset):
