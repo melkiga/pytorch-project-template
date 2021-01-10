@@ -4,10 +4,8 @@ import hashlib
 import tarfile
 import gzip
 import zipfile
-import urllib
 import torchvision.transforms as transforms
 from tqdm import tqdm
-from omni_model.src.utils.options import DatasetOptions
 from omni_model.src import DATA_ROOT as _DATA_ROOT
 from typing import Any, Optional, Callable, Iterable, Union
 

@@ -1,5 +1,4 @@
-from typing import TypedDict, Tuple, Union, Callable, List, Any, Optional
-import json
+from typing import TypedDict, Tuple, Union, Callable, List, Any
 from torchvision import transforms
 
 # TODO: fill this with base option as base class
