@@ -1,6 +1,6 @@
 # TODO: https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 from omni_model.src.utils.options import DatasetOptions
-from omni_model.src.datasets.data import BaseDataset
+from omni_model.src.data.datasets import BaseDataset
 
 
 def run(dataset_options: DatasetOptions = None):

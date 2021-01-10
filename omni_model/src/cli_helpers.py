@@ -1,7 +1,7 @@
 import click
 import os
 import pathlib
-from omni_model.src.datasets.data import _SUPPORTED_DATASETS
+from omni_model.src.data.datasets import _SUPPORTED_DATASETS
 
 import ast
 

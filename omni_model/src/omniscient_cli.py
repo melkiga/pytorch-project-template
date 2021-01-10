@@ -6,7 +6,7 @@ from omni_model.src.cli_helpers import (
     PythonLiteralOption,
 )
 from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
-from omni_model.src.datasets.data import _SUPPORTED_DATASETS
+from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
 from omni_model.src.utils.options import DatasetOptions
 from omni_model.src.runner import run
 
