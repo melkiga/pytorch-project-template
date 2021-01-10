@@ -1,12 +1,7 @@
 import pytest
-from omni_model.src.utils.options import TransformOptions, TrainerOptions, ModelOptions
+from omni_model.src.utils.options import TrainerOptions, ModelOptions
 from torchvision.transforms import Compose
 import torchvision.transforms as transforms
-
-
-@pytest.fixture
-def transform_option():
-    yield TransformOptions
 
 
 @pytest.fixture

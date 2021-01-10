@@ -16,6 +16,7 @@ dataset_options: DatasetOptions = {
     "data_split": (70, 20, 10),
     "num_workers": 8,
     "batch_size": 8,
+    "transformation": "DEFAULT",
 }
 
 device_options: DeviceOptions = {"use_gpu": True, "gpu_number": 0}
@@ -23,7 +24,6 @@ trainer_options: TrainerOptions = {
     "model_arch": "resnet18",
     "pretrained": True,
     "num_epochs": 5,
-    "num_classes": 5,
 }
 
 optimizer_options: OptimizerOptions = {
