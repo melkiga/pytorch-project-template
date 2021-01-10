@@ -4,6 +4,7 @@ from typing import Any, List, Tuple, Union, Optional, Callable
 from PIL import Image
 import pickle
 import numpy as np
+import random
 from torchvision import transforms
 from omni_model.src.utils.options import DatasetOptions, TransformOptions
 from omni_model.src.data.dataset_helpers import (
@@ -61,7 +62,12 @@ class BaseDataset(ABC):
         raise NotImplementedError
 
     def subset_data(self):
-        raise NotImplementedError
+        if self.subset_fraction < 1:
+            sample_indexes = range(len(self.labels))
+            subset_size = int(len(self.labels) * self.subset_fraction)
+            sampled_indexes = random.sample(sample_indexes, subset_size)
+            self.samples = [self.samples[index] for index in sampled_indexes]
+            self.labels = [self.labels[index] for index in sampled_indexes]
 
     def __repr__(self) -> str:
         head = "Dataset " + self.__class__.__name__
@@ -204,10 +210,12 @@ class CIFAR10Dataset(BaseDataset):
                 else:
                     self.labels.extend(entry["fine_labels"])
 
-        self.images = np.vstack(imgs).reshape(-1, 3, 32, 32)
-        self.images = self.images.transpose((0, 2, 3, 1))  # convert to HWC
+        self.samples = np.vstack(imgs).reshape(-1, 3, 32, 32)
+        self.samples = self.samples.transpose((0, 2, 3, 1))  # convert to HWC
 
         self._load_meta()
+        if subset_fraction < 1.0:
+            self.subset_data()
 
     def _load_meta(self) -> None:
         path = self.dataset_root / self.meta["filename"]
@@ -225,7 +233,7 @@ class CIFAR10Dataset(BaseDataset):
         return len(self.labels)
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        img, target = self.images[index], self.labels[index]
+        img, target = self.samples[index], self.labels[index]
         if self.transformation is not None:
             img = Image.fromarray(img)
             img = self.transformation(img)
@@ -242,6 +250,10 @@ class CIFAR10Dataset(BaseDataset):
 
     def extra_repr(self) -> str:
         return "Split: {}".format("Train" if self.is_training is True else "Test")
+
+    def subset_data(self):
+        super().subset_data()
+        self.samples = np.vstack(self.samples).reshape(-1, 32, 32, 3)
 
 
 class CIFAR100Dataset(BaseDataset):

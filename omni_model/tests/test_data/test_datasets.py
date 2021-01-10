@@ -51,7 +51,7 @@ class TestCIFAR10Dataset:
         assert (
             dataset.transformation == _TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID]
         )
-        assert dataset.images is not None
+        assert dataset.samples is not None
         assert len(dataset.class_names) == 10
         assert len(dataset) == 60000
 
@@ -61,3 +61,7 @@ class TestCIFAR10Dataset:
         )
         i, (img, target) = enumerate(dataset).__next__()
         assert list(img.size()) == [3, 32, 32]
+
+    def test_cifar_dataset_subset(self, cifar10dataset):
+        dataset = cifar10dataset(dataset_name="CIFAR10", subset_fraction=0.5)
+        assert len(dataset) == 30000
