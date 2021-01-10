@@ -230,9 +230,13 @@ class CIFAR10Dataset(BaseDataset):
         self.samples = np.vstack(self.samples).reshape(-1, 3, 32, 32)
         self.samples = self.samples.transpose((0, 2, 3, 1))  # convert to HWC
 
-        self.get_classes()
         if subset_fraction < 1.0:
             self.subset_data()
+
+        self.num_classes = self.get_classes()
+
+        if self.num_classes != len(set(self.labels)):
+            self.num_classes = len(set(self.labels))
 
     def get_classes(self) -> None:
         path = self.dataset_root / self.meta["filename"]
@@ -245,6 +249,7 @@ class CIFAR10Dataset(BaseDataset):
             data = pickle.load(infile, encoding="latin1")
             self.class_names = data[self.meta["key"]]
         self.class_to_idx = {_class: i for i, _class in enumerate(self.class_names)}
+        return len(self.class_names)
 
     def __len__(self):
         return len(self.labels)
