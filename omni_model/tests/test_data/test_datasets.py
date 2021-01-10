@@ -1,9 +1,8 @@
 import pytest
 from omni_model.src.data.datasets import (
     BaseDataset,
-    ImageFolderDataset,
     CIFAR10Dataset,
-    BaseDataLoader,
+    DataLoaderWrapper,
 )
 from omni_model.src.data.dataset_helpers import (
     _SUPPORTED_DATASETS,
@@ -11,26 +10,6 @@ from omni_model.src.data.dataset_helpers import (
     _DATASET_TO_GROUP,
     _VALID,
 )
-
-
-@pytest.fixture
-def basedataset():
-    yield BaseDataset
-
-
-class TestBaseDataset:
-    def test_default_dataset_loads(self, basedataset):
-        basedataset(dataset_name="EXAMPLE", subset_fraction=1.0)
-
-
-@pytest.fixture
-def imagedataset():
-    yield ImageFolderDataset
-
-
-class TestImageDataset:
-    def test_default_imagedataset_loads(self, imagedataset):
-        imagedataset(dataset_name="EXAMPLE", subset_fraction=1.0)
 
 
 @pytest.fixture
@@ -66,12 +45,12 @@ class TestCIFAR10Dataset:
 
 @pytest.fixture
 def data_loader():
-    yield BaseDataLoader
+    yield DataLoaderWrapper
 
 
 class TestBaseDataLoader:
-    def test_default_loader(self, data_loader, basedataset):
-        data_loader(basedataset(dataset_name="EXAMPLE", subset_fraction=1.0))
+    def test_default_loader(self, data_loader, cifar10dataset):
+        data_loader(cifar10dataset(dataset_name="CIFAR10", subset_fraction=1.0))
 
     @pytest.mark.parametrize("data_split", [(40, 30, 30), (98, 1, 1), (80, 10, 10)])
     def test_loader_nonempty_splits(self, data_loader, cifar10dataset, data_split):

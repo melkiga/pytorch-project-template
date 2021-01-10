@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, List, Tuple, Optional, Callable
 from PIL import Image
 import pickle
@@ -32,20 +32,71 @@ class BaseDataset(ABC):
         transformation: transforms.Compose = None,
         is_training: bool = False,
     ):
-        self.dataset_name = dataset_name
-        self.dataset_root = _SUPPORTED_DATASETS[dataset_name]
-        self.subset_fraction = subset_fraction
-        self.is_training = is_training
+        self._dataset_name = dataset_name
+        self._dataset_root = _SUPPORTED_DATASETS[dataset_name]
+        self._subset_fraction = subset_fraction
+        self._is_training = is_training
+        self._samples = []
+        self._labels = []
+        self._class_names = []
         phase_transform_type = _TRAIN if self.is_training else _VALID
         if transformation is not None:
             if transformation == "DEFAULT":
-                self.transformation = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]][
+                self._transformation = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]][
                     phase_transform_type
                 ]
             elif type(transformation) == transforms.Compose:
-                self.transformation = transformation
+                self._transformation = transformation
             else:
                 raise TypeError(f"Invalid transformation type {type(transformation)}.")
+
+    @property
+    def samples(self):
+        return self._samples
+
+    @samples.setter
+    def samples(self, samples):
+        self._samples = samples
+
+    @property
+    def labels(self):
+        return self._labels
+
+    @labels.setter
+    def labels(self, labels):
+        self._labels = labels
+
+    @property
+    def class_names(self):
+        return self._class_names
+
+    @class_names.setter
+    def class_names(self, class_names):
+        self._class_names = class_names
+
+    @property
+    def dataset_root(self):
+        return self._dataset_root
+
+    @dataset_root.setter
+    def dataset_root(self, dataset_root):
+        self._dataset_root = dataset_root
+
+    @property
+    def subset_fraction(self):
+        return self._subset_fraction
+
+    @subset_fraction.setter
+    def subset_fraction(self, subset_fraction):
+        self._subset_fraction = subset_fraction
+
+    @property
+    def transformation(self):
+        return self._transformation
+
+    @transformation.setter
+    def transformation(self, transformation):
+        self._transformation = transformation
 
     def __len__(self):
         return NotImplementedError
@@ -53,13 +104,14 @@ class BaseDataset(ABC):
     def __getitem__(self, index):
         raise NotImplementedError
 
+    @abstractmethod
     def get_classes(self):
         raise NotImplementedError
 
     def subset_data(self):
         if self.subset_fraction < 1:
-            sample_indexes = range(len(self.labels))
-            subset_size = int(len(self.labels) * self.subset_fraction)
+            sample_indexes = range(len(self._labels))
+            subset_size = int(len(self._labels) * self.subset_fraction)
             sampled_indexes = random.sample(sample_indexes, subset_size)
             self.samples = [self.samples[index] for index in sampled_indexes]
             self.labels = [self.labels[index] for index in sampled_indexes]
@@ -85,7 +137,7 @@ class BaseDataset(ABC):
         return ""
 
 
-class BaseDataLoader(ABC):
+class DataLoaderWrapper:
     training_dataloader: Optional[DataLoader] = None
     validation_dataloader: Optional[DataLoader] = None
     testing_dataloader: Optional[DataLoader] = None
@@ -165,25 +217,24 @@ class CIFAR10Dataset(BaseDataset):
         downloaded_list = self.train_list + self.test_list
 
         # now load the picked numpy arrays
-        imgs = []
         for file_name, checksum in downloaded_list:
             file_path = self.dataset_root / file_name
             with open(file_path, "rb") as f:
                 entry = pickle.load(f, encoding="latin1")
-                imgs.append(entry["data"])
+                self.samples.append(entry["data"])
                 if "labels" in entry:
                     self.labels.extend(entry["labels"])
                 else:
                     self.labels.extend(entry["fine_labels"])
 
-        self.samples = np.vstack(imgs).reshape(-1, 3, 32, 32)
+        self.samples = np.vstack(self.samples).reshape(-1, 3, 32, 32)
         self.samples = self.samples.transpose((0, 2, 3, 1))  # convert to HWC
 
-        self._load_meta()
+        self.get_classes()
         if subset_fraction < 1.0:
             self.subset_data()
 
-    def _load_meta(self) -> None:
+    def get_classes(self) -> None:
         path = self.dataset_root / self.meta["filename"]
         if not check_integrity(path, self.meta["md5"]):
             raise RuntimeError(
