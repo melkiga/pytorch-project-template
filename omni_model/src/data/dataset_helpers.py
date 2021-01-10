@@ -7,12 +7,17 @@ _VALID = "val"
 _TEST = "test"
 
 _CIFAR10 = "CIFAR10"
+_EXAMPLE = "EXAMPLE"
 
-_SUPPORTED_DATASETS = {_CIFAR10: _DATA_ROOT / "cifar-10-batches-py"}
+_SUPPORTED_DATASETS = {
+    _CIFAR10: _DATA_ROOT / "cifar-10-batches-py",
+    _EXAMPLE: _DATA_ROOT / "",
+}
 
-_DATASET_TO_GROUP = {_CIFAR10: "cifar"}
+_DATASET_TO_GROUP = {_CIFAR10: "cifar", _EXAMPLE: "example"}
 
 _TRANSFORMS = {
+    "example": {_TRAIN: {}, _VALID: {}},
     "cifar": {
         _TRAIN: transforms.Compose(
             [
@@ -40,5 +45,5 @@ _TRANSFORMS = {
                 ),
             ]
         ),
-    }
+    },
 }
