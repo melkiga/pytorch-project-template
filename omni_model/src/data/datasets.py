@@ -134,54 +134,6 @@ class BaseDataLoader(ABC):
         return training_dataset, validation_dataset, testing_dataset
 
 
-class ImageFolderDataset(BaseDataset):
-    image_paths: List[pathlib.Path] = []
-    images: List[Any] = []
-    transformation: transforms = None
-    __SUPPORTED_DATASETS = [_EXAMPLE]
-
-    def __init__(
-        self,
-        dataset_name: str,
-        subset_fraction: float,
-        transformation: Optional[TransformOptions] = None,
-        is_training: bool = BaseDataset.is_training,
-    ):
-        if dataset_name not in self.__SUPPORTED_DATASETS:
-            raise ValueError(
-                f"Invalid selection {dataset_name = }. Select from the following to create an ImageDataset: {', '.join(self.__SUPPORTED_DATASETS)}"
-            )
-        super().__init__(
-            dataset_name=dataset_name,
-            subset_fraction=subset_fraction,
-            is_training=is_training,
-            transformation=transformation,
-        )
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, index):
-        image_path = self.image_paths[index]
-
-        # convert to image (PIL)
-        image = None
-
-        # get label
-        label = None
-
-        if self.transformation:
-            pass
-            # transform image
-        return (image, label)
-
-    def get_classes(self):
-        raise NotImplementedError
-
-    def subset_data(self):
-        raise NotImplementedError
-
-
 class CIFAR10Dataset(BaseDataset):
     train_list = [
         ["data_batch_1", "c99cafc152244af753f735de768cd75f"],
@@ -277,25 +229,3 @@ class CIFAR10Dataset(BaseDataset):
     def subset_data(self):
         super().subset_data()
         self.samples = np.vstack(self.samples).reshape(-1, 32, 32, 3)
-
-
-class CIFAR100Dataset(BaseDataset):
-    def __init__(self):
-        pass
-
-    def __len__(self):
-        pass
-
-    def __getitem__(self):
-        pass
-
-
-class RandomDataset(BaseDataset):
-    def __init__(self):
-        pass
-
-    def __len__(self):
-        pass
-
-    def __getitem__(self):
-        pass
