@@ -1,6 +1,8 @@
 import pathlib
 from abc import ABC
 from typing import Any, List, Tuple, Union, Optional, Callable
+import pickle
+import numpy as np
 from torchvision import transforms
 from omni_model.src.utils.options import DatasetOptions, TransformOptions
 from omni_model.src.data.dataset_helpers import (
@@ -151,20 +153,7 @@ class ImageFolderDataset(BaseDataset):
 
 
 class CIFAR10Dataset(BaseDataset):
-    """`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset.
-    Args:
-        root (string): Root directory of dataset where directory
-            ``cifar-10-batches-py`` exists or will be saved to if download is set to True.
-        train (bool, optional): If True, creates dataset from training set, otherwise
-            creates from test set.
-        transform (callable, optional): A function/transform that takes in an PIL image
-            and returns a transformed version. E.g, ``transforms.RandomCrop``
-        target_transform (callable, optional): A function/transform that takes in the
-            target and transforms it.
-        download (bool, optional): If true, downloads the dataset from the internet and
-            puts it in root directory. If dataset is already downloaded, it is not
-            downloaded again.
-    """
+    images: Any
 
     base_folder = "cifar-10-batches-py"
     url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
@@ -210,8 +199,42 @@ class CIFAR10Dataset(BaseDataset):
                 + " You can use download=True to download it"
             )
 
+        if self.is_training:
+            downloaded_list = self.train_list
+        else:
+            downloaded_list = self.test_list
+
+        # now load the picked numpy arrays
+        imgs = []
+        for file_name, checksum in downloaded_list:
+            file_path = self.dataset_root / file_name
+            with open(file_path, "rb") as f:
+                entry = pickle.load(f, encoding="latin1")
+                imgs.append(entry["data"])
+                if "labels" in entry:
+                    self.labels.extend(entry["labels"])
+                else:
+                    self.labels.extend(entry["fine_labels"])
+
+        self.images = np.vstack(imgs).reshape(-1, 3, 32, 32)
+        self.images = self.images.transpose((0, 2, 3, 1))  # convert to HWC
+
+        self._load_meta()
+
+    def _load_meta(self) -> None:
+        path = self.dataset_root / self.meta["filename"]
+        if not check_integrity(path, self.meta["md5"]):
+            raise RuntimeError(
+                "Dataset metadata file not found or corrupted."
+                + " You can use download=True to download it"
+            )
+        with open(path, "rb") as infile:
+            data = pickle.load(infile, encoding="latin1")
+            self.class_names = data[self.meta["key"]]
+        self.class_to_idx = {_class: i for i, _class in enumerate(self.class_names)}
+
     def __len__(self):
-        pass
+        return len(self.labels)
 
     def __getitem__(self):
         pass
@@ -220,7 +243,7 @@ class CIFAR10Dataset(BaseDataset):
         root = self.dataset_root
         for fentry in self.train_list + self.test_list:
             filename, md5 = fentry[0], fentry[1]
-            fpath = root / self.base_folder / filename
+            fpath = root / filename
             if not check_integrity(str(fpath), md5):
                 return False
         return True

@@ -58,7 +58,7 @@ _TRANSFORMS = {
 }
 
 
-def calculate_md5(fpath: str, chunk_size: int = 1024 * 1024) -> str:
+def calculate_md5(fpath: pathlib.Path, chunk_size: int = 1024 * 1024) -> str:
     md5 = hashlib.md5()
     with open(fpath, "rb") as f:
         for chunk in iter(lambda: f.read(chunk_size), b""):
@@ -66,16 +66,21 @@ def calculate_md5(fpath: str, chunk_size: int = 1024 * 1024) -> str:
     return md5.hexdigest()
 
 
-def check_md5(fpath: str, md5: str, **kwargs: Any) -> bool:
+def check_md5(fpath: pathlib.Path, md5: str, **kwargs: Any) -> bool:
     return md5 == calculate_md5(fpath, **kwargs)
 
 
-def check_integrity(fpath: str, md5: Optional[str] = None) -> bool:
-    if not pathlib.Path(fpath).is_file():
+def check_integrity(fpath: Union[str, pathlib.Path], md5: Optional[str] = None) -> bool:
+    if type(fpath) == str:
+        file_path = pathlib.Path(fpath)
+    else:
+        file_path = fpath  # type: ignore
+
+    if not file_path.is_file():
         return False
     if md5 is None:
         return True
-    return check_md5(fpath, md5)
+    return check_md5(file_path, md5)
 
 
 def _is_tarxz(filename: str) -> bool:
