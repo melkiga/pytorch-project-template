@@ -190,10 +190,7 @@ class CIFAR10Dataset(BaseDataset):
                 + " Please download the dataset first using the download-data command."
             )
 
-        if self.is_training:
-            downloaded_list = self.train_list
-        else:
-            downloaded_list = self.test_list
+        downloaded_list = self.train_list + self.test_list
 
         # now load the picked numpy arrays
         imgs = []

@@ -46,14 +46,14 @@ class TestCIFAR10Dataset:
         dataset = cifar10dataset(
             dataset_name="CIFAR10",
             subset_fraction=1.0,
-            transformation=_TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID],
+            transformation="DEFAULT",
         )
         assert (
             dataset.transformation == _TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID]
         )
         assert dataset.images is not None
         assert len(dataset.class_names) == 10
-        assert len(dataset) == 10000
+        assert len(dataset) == 120000
 
     def test_cifar_getitem(self, cifar10dataset):
         dataset = cifar10dataset(
