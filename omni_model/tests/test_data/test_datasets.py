@@ -53,7 +53,7 @@ class TestCIFAR10Dataset:
         )
         assert dataset.images is not None
         assert len(dataset.class_names) == 10
-        assert len(dataset) == 120000
+        assert len(dataset) == 60000
 
     def test_cifar_getitem(self, cifar10dataset):
         dataset = cifar10dataset(
