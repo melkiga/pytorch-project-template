@@ -1,4 +1,4 @@
-from typing import TypedDict, Tuple, Union, Callable, List, Any
+from typing import TypedDict, Tuple, Union, Callable, List, Any, Optional
 import json
 from torchvision import transforms
 
@@ -11,14 +11,14 @@ class TransformOptions(TypedDict):
     transform: Union[str, None, Callable[[List[Any]], transforms.Compose]]
 
 
-class DatasetOptions(TypedDict):
+class RequiredDatasetOptions(TypedDict):
     dataset_name: str
-    subset_fraction: float
 
 
-class CIFARDatasetOptions(DatasetOptions, total=False):
+class DatasetOptions(RequiredDatasetOptions, total=False):
     transformation: Any
     is_training: bool
+    subset_fraction: float
 
 
 class DataLoaderOptions(TypedDict):
@@ -32,11 +32,11 @@ class DeviceOptions(TypedDict, total=False):
     gpu_number: int
 
 
-class ModelOptions(TypedDict):
+class RequiredModelOptions(TypedDict):
     model_arch: str
 
 
-class AllModelOptions(ModelOptions, total=False):
+class ModelOptions(RequiredModelOptions, total=False):
     num_classes: int
     pretrained: Union[str, bool]
 
@@ -50,5 +50,5 @@ class SchedulerOptions(TypedDict):
     scheduler_name: str
 
 
-class TrainerOptions(AllModelOptions, total=False):
+class TrainerOptions(ModelOptions, OptimizerOptions, SchedulerOptions):
     num_epochs: int

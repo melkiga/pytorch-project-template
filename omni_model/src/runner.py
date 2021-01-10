@@ -3,7 +3,7 @@ from omni_model.src.utils.options import (
     DatasetOptions,
     DeviceOptions,
     TrainerOptions,
-    AllModelOptions,
+    ModelOptions,
 )
 from omni_model.src.data.datasets import CIFAR10Dataset
 from omni_model.src.trainer.base_trainer import BaseTrainer
@@ -28,7 +28,6 @@ def run(
     device_options: DeviceOptions = None,
     trainer_options: TrainerOptions = None,
 ):
-    dataset = CIFAR10Dataset(**dataset_options)
 
     # TODO: load parameters
 
@@ -39,29 +38,35 @@ def run(
         f"cuda:{device_options['gpu_number']}" if device_options["use_gpu"] else "cpu"
     )
 
-    # TODO: initialize engine
-    model_options: ModelOptions = {
-        i: trainer_options.pop(i)
-        for i in AllModelOptions.__annotations__.keys()
-        if i in trainer_options
-    }
-    model = OmniModel(**model_options)
-    trainer = BaseTrainer(model=model, **trainer_options)
     # engine can train, eval, optimize the model
     # engine can save and load the model and optimizer
 
-    # TODO: load dataset
+    if dataset_options["dataset_name"] == "CIFAR10":
+        dataset = CIFAR10Dataset(**dataset_options)
+    else:
+        raise NotImplementedError  # TODO: load dataset
     # dataset is a dictionary that contains all the needed datasets indexed by modes
     # (example: dataset.keys() -> ['train','eval'])
 
     # TODO: load model
+    # TODO: initialize engine
+    model_options: ModelOptions = {}
+    for key in ModelOptions.__required_keys__:
+        if key not in trainer_options:
+            raise ValueError("")
+        model_options[key] = trainer_options.pop(key)
+    for key in ModelOptions.__optional_keys__:
+        if key in trainer_options:
+            model_options[key] = trainer_options.pop(key)
+    model = OmniModel(**model_options)
+
     # model includes a network, a criterion and a metric
     # model can register engine hooks (begin epoch, end batch, end batch, etc.)
     # (example: "calculate mAP at the end of the evaluation epoch")
     # note: model can access to datasets using engine.dataset
 
     # setup training params
-    # optimizer can register engine hooks
+    trainer = BaseTrainer(model=model, **trainer_options)
 
     # setup logger
 
