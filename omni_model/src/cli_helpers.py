@@ -2,7 +2,7 @@ import click
 import os
 import pathlib
 from omni_model.src.data.datasets import _SUPPORTED_DATASETS
-
+import torch
 import ast
 
 
@@ -13,6 +13,30 @@ class PythonLiteralOption(click.Option):
             return ast.literal_eval(value)
         except:
             raise click.BadParameter(value)
+
+
+def validate_device(ctx, param, value):
+    print(dir(ctx))
+    print(ctx.params)
+    if "use_gpu" not in ctx.params:
+        print(
+            "WARNING: Option GPU Number cannot be used without setting the `--use-gpu` option. Was this a mistake?"
+        )
+        print(f"Checking Cuda Available: {(cuda_available:=torch.cuda.is_available())}")
+        if cuda_available:
+            num_devices = torch.cuda.device_count()
+            print(f"Checking device selection: Number of devices found: {num_devices}.")
+            if value >= num_devices:
+                print(
+                    f"WARNING: Max number of devices {num_devices}, but selected {param.name}={value}."
+                )
+                value = 0
+            print(f"Cuda found. Setting device number to {value}.")
+        else:
+            raise click.BadParameter(
+                f"Invalid selection: {param.name} = {value = }. Cuda not detected. Please use the flag `--no-gpu`."
+            )
+    return value
 
 
 def validate_dataset_choice(ctx, param, value) -> str:
