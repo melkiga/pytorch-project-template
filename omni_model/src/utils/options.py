@@ -23,9 +23,13 @@ class CIFARDatasetOptions(DatasetOptions, total=False):
 
 class DataLoaderOptions(TypedDict):
     data_split: Tuple[int, int, int]
-    is_training: bool
     num_workers: int
     batch_size: int
+
+
+class DeviceOptions(TypedDict, total=False):
+    use_gpu: bool
+    gpu_number: int
 
 
 class ModelOptions:

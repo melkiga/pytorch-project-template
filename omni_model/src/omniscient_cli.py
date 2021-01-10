@@ -11,7 +11,7 @@ from omni_model.src.cli_helpers import (
 )
 from omni_model.src.model.omni_model import model_names as _SUPPORTED_MODEL_ARCHS
 from omni_model.src.data.dataset_helpers import _SUPPORTED_DATASETS
-from omni_model.src.utils.options import DatasetOptions, CIFARDatasetOptions
+from omni_model.src.utils.options import DatasetOptions, DeviceOptions
 from omni_model.src.runner import run, download
 
 
@@ -106,7 +106,10 @@ def train(
         "dataset_name": dataset_name,
         "subset_fraction": subset_fraction,
     }
-    run(dataset_options)
+
+    device_options: DeviceOptions = {"use_gpu": use_gpu, "gpu_number": gpu_number}
+
+    run(dataset_options, device_options)
 
 
 cli = click.CommandCollection(sources=[omniscient_cli, omniscient_datasets])

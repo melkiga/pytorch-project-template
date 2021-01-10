@@ -1,8 +1,9 @@
 # TODO: https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
-from omni_model.src.utils.options import DatasetOptions
+from omni_model.src.utils.options import DatasetOptions, DeviceOptions
 from omni_model.src.data.datasets import CIFAR10Dataset
 from omni_model.src.data.dataset_helpers import download_and_extract_archive
 from typing import Optional
+import torch
 
 
 def download(
@@ -15,12 +16,15 @@ def download(
     download_and_extract_archive(url, dataset_root, filename=filename, md5=md5)
 
 
-def run(dataset_options: DatasetOptions = None):
+def run(dataset_options: DatasetOptions = None, device_options: DeviceOptions = None):
     dataset = CIFAR10Dataset(**dataset_options)
 
     # TODO: load parameters
 
-    # TODO: set device
+    # set torch device
+    device = torch.device(
+        f"cuda:{device_options['gpu_number']}" if device_options["use_gpu"] else "cpu"
+    )
 
     # TODO: initialize engine
     # engine can train, eval, optimize the model
