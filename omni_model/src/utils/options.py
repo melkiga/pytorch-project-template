@@ -21,7 +21,7 @@ class DatasetOptions(RequiredDatasetOptions, total=False):
     subset_fraction: float
 
 
-class DataLoaderOptions(TypedDict):
+class DataLoaderOptions(TypedDict, total=False):
     data_split: Tuple[int, int, int]
     num_workers: int
     batch_size: int
