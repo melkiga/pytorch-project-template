@@ -1,10 +1,13 @@
 import pathlib
+import copy
 from abc import ABC
 from typing import Any, List, Tuple, Union, Optional, Callable
 from PIL import Image
 import pickle
 import numpy as np
 import random
+from torch.utils.data.dataset import random_split
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from omni_model.src.utils.options import DatasetOptions, TransformOptions
 from omni_model.src.data.dataset_helpers import (
@@ -91,24 +94,44 @@ class BaseDataset(ABC):
 
 
 class BaseDataLoader(ABC):
-    training_dataset: Optional[BaseDataset] = None
-    testing_dataset: Optional[BaseDataset] = None
-    validation_dataset: Optional[BaseDataset] = None
+    training_dataloader: Optional[DataLoader] = None
+    validation_dataloader: Optional[DataLoader] = None
+    testing_dataloader: Optional[DataLoader] = None
 
     def __init__(
         self,
         dataset: BaseDataset,
-        batch_size: int,
-        num_workers: int,
-        data_split: Tuple[int, int, int],
+        batch_size: int = 32,
+        num_workers: int = 8,
+        data_split: Tuple[int, int, int] = (100, 0, 0),
     ):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.data_split = data_split
-        # TODO: split base dataset, return or set tr,te,val
+        training_dataset, validation_dataset, testing_dataset = self.split_data(dataset)
 
-    def split_data(self):
-        raise NotImplementedError
+        self.training_dataloader = DataLoader(
+            training_dataset, batch_size=batch_size, num_workers=num_workers
+        )
+        self.validation_dataloader = DataLoader(
+            validation_dataset, batch_size=batch_size, num_workers=num_workers
+        )
+        self.testing_dataloader = DataLoader(
+            testing_dataset, batch_size=batch_size, num_workers=num_workers
+        )
+
+    def split_data(self, dataset):
+        indices = list(range(len(dataset)))
+        split_sizes = tuple(
+            int(split / 100 * len(dataset)) for split in self.data_split
+        )
+
+        (
+            training_dataset,
+            validation_dataset,
+            testing_dataset,
+        ) = random_split(dataset, split_sizes)
+        return training_dataset, validation_dataset, testing_dataset
 
 
 class ImageFolderDataset(BaseDataset):

@@ -1,5 +1,10 @@
 import pytest
-from omni_model.src.data.datasets import BaseDataset, ImageFolderDataset, CIFAR10Dataset
+from omni_model.src.data.datasets import (
+    BaseDataset,
+    ImageFolderDataset,
+    CIFAR10Dataset,
+    BaseDataLoader,
+)
 from omni_model.src.data.dataset_helpers import (
     _SUPPORTED_DATASETS,
     _TRANSFORMS,
@@ -16,14 +21,6 @@ def basedataset():
 class TestBaseDataset:
     def test_default_dataset_loads(self, basedataset):
         basedataset(dataset_name="EXAMPLE", subset_fraction=1.0)
-
-    @pytest.mark.parametrize("subset_fraction", [1.0])
-    @pytest.mark.parametrize("dataset_name", [*list(_SUPPORTED_DATASETS.keys())])
-    def test_default_dataset(self, basedataset, dataset_name, subset_fraction):
-        dataset = basedataset(
-            dataset_name=dataset_name, subset_fraction=subset_fraction
-        )
-        assert dataset.dataset_root == _SUPPORTED_DATASETS[dataset_name]
 
 
 @pytest.fixture
@@ -65,3 +62,36 @@ class TestCIFAR10Dataset:
     def test_cifar_dataset_subset(self, cifar10dataset):
         dataset = cifar10dataset(dataset_name="CIFAR10", subset_fraction=0.5)
         assert len(dataset) == 30000
+
+
+@pytest.fixture
+def data_loader():
+    yield BaseDataLoader
+
+
+class TestBaseDataLoader:
+    def test_default_loader(self, data_loader, basedataset):
+        data_loader(basedataset(dataset_name="EXAMPLE", subset_fraction=1.0))
+
+    @pytest.mark.parametrize("data_split", [(40, 30, 30), (98, 1, 1), (80, 10, 10)])
+    def test_loader_nonempty_splits(self, data_loader, cifar10dataset, data_split):
+        dataset = cifar10dataset(
+            dataset_name="CIFAR10", subset_fraction=0.5, transformation="DEFAULT"
+        )
+        data_loaders = data_loader(dataset, data_split=data_split)
+        split_sizes = tuple(int(split / 100 * len(dataset)) for split in data_split)
+
+        assert len(data_loaders.training_dataloader.dataset) == split_sizes[0]
+        assert len(data_loaders.validation_dataloader.dataset) == split_sizes[1]
+        assert len(data_loaders.testing_dataloader.dataset) == split_sizes[2]
+
+    def test_loader_empty_splits(self, data_loader, cifar10dataset):
+        dataset = cifar10dataset(
+            dataset_name="CIFAR10", subset_fraction=0.5, transformation="DEFAULT"
+        )
+        data_loaders = data_loader(dataset, data_split=(50, 50, 0))
+        split_sizes = tuple(int(split / 100 * len(dataset)) for split in (50, 50, 0))
+
+        assert len(data_loaders.training_dataloader.dataset) == split_sizes[0]
+        assert len(data_loaders.validation_dataloader.dataset) == split_sizes[1]
+        assert len(data_loaders.testing_dataloader.dataset) == split_sizes[2]
