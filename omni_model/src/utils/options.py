@@ -1,10 +1,14 @@
-from typing import TypedDict, Tuple
+from typing import TypedDict, Tuple, Union, Callable, List, Any
 import json
+from torchvision import transforms
 
-
+# TODO: fill this with base option as base class
 class BaseOptions(TypedDict):
-    def __init__(self):
-        pass
+    placeholder: None
+
+
+class TransformOptions(TypedDict):
+    transform: Union[str, None, Callable[[List[Any]], transforms.Compose]]
 
 
 class DatasetOptions(TypedDict):
@@ -13,10 +17,6 @@ class DatasetOptions(TypedDict):
     data_split: Tuple[int, int, int]
     num_workers: int
     batch_size: int
-
-    def __str__(self):
-        return json.dumps(self.__dict__(), indent=4, sort_keys=True)
-        # return {**self.__dict__()}
 
 
 class ModelOptions:

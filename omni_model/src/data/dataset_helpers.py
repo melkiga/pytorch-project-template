@@ -14,6 +14,11 @@ _SUPPORTED_DATASETS = {
     _EXAMPLE: _DATA_ROOT / "",
 }
 
+
+def get_transform(dataet_name):
+    pass
+
+
 _DATASET_TO_GROUP = {_CIFAR10: "cifar", _EXAMPLE: "example"}
 
 _TRANSFORMS = {

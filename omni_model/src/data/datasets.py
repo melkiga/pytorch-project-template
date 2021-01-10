@@ -1,7 +1,8 @@
 import pathlib
 from abc import ABC
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Tuple, Union, Optional, Callable
 from torchvision import transforms
+from omni_model.src.utils.options import DatasetOptions, TransformOptions
 from omni_model.src.data.dataset_helpers import (
     _DATASET_TO_GROUP,
     _SUPPORTED_DATASETS,
@@ -24,6 +25,7 @@ class BaseDataset(ABC):
         self,
         dataset_name: str,
         subset_fraction: float,
+        transformation: TransformOptions = None,
         is_training: bool = False,
     ):
         self.dataset_name = dataset_name
@@ -31,9 +33,15 @@ class BaseDataset(ABC):
         self.subset_fraction = subset_fraction
         self.is_training = is_training
         phase_transform_type = _TRAIN if self.is_training else _VALID
-        self.transformation = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]][
-            phase_transform_type
-        ]
+        if transformation is not None:
+            if transformation == "DEFAULT":
+                self.transformation = _TRANSFORMS[_DATASET_TO_GROUP[dataset_name]][
+                    phase_transform_type
+                ]
+            elif type(transformation) == transforms.Compose:
+                self.transformation = transformation
+            else:
+                raise TypeError(f"Invalid transformation type {type(transformation)}.")
 
     def __len__(self):
         return NotImplementedError
@@ -49,9 +57,9 @@ class BaseDataset(ABC):
 
 
 class BaseDataLoader(ABC):
-    training_dataset: BaseDataset = None
-    testing_dataset: BaseDataset = None
-    validation_dataset: BaseDataset = None
+    training_dataset: Optional[BaseDataset] = None
+    testing_dataset: Optional[BaseDataset] = None
+    validation_dataset: Optional[BaseDataset] = None
 
     def __init__(
         self,
@@ -79,6 +87,7 @@ class ImageFolderDataset(BaseDataset):
         self,
         dataset_name: str,
         subset_fraction: float,
+        transformation: Optional[TransformOptions] = None,
         is_training: bool = BaseDataset.is_training,
     ):
         if dataset_name not in self.__SUPPORTED_DATASETS:
@@ -89,6 +98,7 @@ class ImageFolderDataset(BaseDataset):
             dataset_name=dataset_name,
             subset_fraction=subset_fraction,
             is_training=is_training,
+            transformation=transformation,
         )
 
     def __len__(self):
@@ -155,12 +165,14 @@ class CIFAR10Dataset(BaseDataset):
     def __init__(
         self,
         subset_fraction: float,
+        transformation: Optional[TransformOptions] = None,
         is_training: bool = BaseDataset.is_training,
     ):
         super().__init__(
             dataset_name=_CIFAR10,
             subset_fraction=subset_fraction,
             is_training=is_training,
+            transformation=transformation,
         )
 
     def __len__(self):

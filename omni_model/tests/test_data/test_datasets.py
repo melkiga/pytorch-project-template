@@ -43,7 +43,10 @@ def cifar10dataset():
 
 class TestCIFAR10Dataset:
     def test_default_cifar10dataset_loads(self, cifar10dataset):
-        dataset = cifar10dataset(subset_fraction=1.0)
+        dataset = cifar10dataset(
+            subset_fraction=1.0,
+            transformation=_TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID],
+        )
         assert (
             dataset.transformation == _TRANSFORMS[_DATASET_TO_GROUP["CIFAR10"]][_VALID]
         )
