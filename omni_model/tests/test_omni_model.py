@@ -30,7 +30,5 @@ class TestOmniModel:
         resnet = OmniModel(model_arch="resnet18", pretrained=True)
         resnet.freeze_layers()
         resnet_layers = resnet.parameters()
-        # for layer in resnet_layers:
-        #     print(layer.requires_grad)
         for layer in resnet_layers:
-            print(layer.requires_grad)
+            assert layer.requires_grad == False
