@@ -1,7 +1,5 @@
-import pathlib
-import copy
 from abc import ABC
-from typing import Any, List, Tuple, Union, Optional, Callable
+from typing import Any, List, Tuple, Optional, Callable
 from PIL import Image
 import pickle
 import numpy as np
@@ -9,20 +7,14 @@ import random
 from torch.utils.data.dataset import random_split
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from omni_model.src.utils.options import DatasetOptions, TransformOptions
 from omni_model.src.data.dataset_helpers import (
     _DATASET_TO_GROUP,
     _SUPPORTED_DATASETS,
     _TRANSFORMS,
     _TRAIN,
     _VALID,
-    _CIFAR10,
-    _EXAMPLE,
 )
-from omni_model.src.data.dataset_helpers import (
-    check_integrity,
-    download_and_extract_archive,
-)
+from omni_model.src.data.dataset_helpers import check_integrity
 
 
 class BaseDataset(ABC):
@@ -37,7 +29,7 @@ class BaseDataset(ABC):
         self,
         dataset_name: str,
         subset_fraction: float,
-        transformation: TransformOptions = None,
+        transformation: transforms.Compose = None,
         is_training: bool = False,
     ):
         self.dataset_name = dataset_name
@@ -121,7 +113,6 @@ class BaseDataLoader(ABC):
         )
 
     def split_data(self, dataset):
-        indices = list(range(len(dataset)))
         split_sizes = tuple(
             int(split / 100 * len(dataset)) for split in self.data_split
         )
@@ -155,7 +146,7 @@ class CIFAR10Dataset(BaseDataset):
         self,
         dataset_name: str,
         subset_fraction: float,
-        transformation: Optional[TransformOptions] = None,
+        transformation: Optional[transforms.Compose] = None,
         is_training: bool = BaseDataset.is_training,
     ):
         super().__init__(
