@@ -113,7 +113,7 @@ def train(
     }
 
     device_options: DeviceOptions = {"use_gpu": use_gpu, "gpu_number": gpu_number}
-    trainer_options: TrainerOption = {
+    trainer_options: TrainerOptions = {
         "model_arch": model_arch,
         "pretrained": pretrained,
     }
