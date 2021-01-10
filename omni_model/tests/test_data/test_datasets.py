@@ -1,6 +1,5 @@
 import pytest
 from omni_model.src.data.datasets import (
-    BaseDataset,
     CIFAR10Dataset,
     DataLoaderWrapper,
 )
@@ -10,10 +9,38 @@ from omni_model.src.data.dataset_helpers import (
     _DATASET_TO_GROUP,
     _VALID,
 )
+from omni_model.src.utils.options import (
+    DatasetOptions,
+    DataLoaderOptions,
+)
+
+dataset_options: DatasetOptions = {
+    "dataset_name": "CIFAR10",
+    "subset_fraction": 0.5,
+    "is_training": True,
+}
+
+dataloader_options: DataLoaderOptions = {
+    "data_split": (70, 20, 10),
+    "num_workers": 8,
+    "batch_size": 8,
+}
+
+
+def test_cifar_data_loading_options(cifar10dataset, data_loader):
+    dataset = cifar10dataset(**dataset_options)
+    assert len(dataset) == 30000
+    data_loaders = data_loader(dataset, **dataloader_options)
+    split_sizes = tuple(
+        int(split / 100 * len(dataset)) for split in dataloader_options["data_split"]
+    )
+    assert len(data_loaders.training_dataloader.dataset) == split_sizes[0]
+    assert len(data_loaders.validation_dataloader.dataset) == split_sizes[1]
+    assert len(data_loaders.testing_dataloader.dataset) == split_sizes[2]
 
 
 @pytest.fixture
-def cifar10dataset(scope="package"):
+def cifar10dataset():
     yield CIFAR10Dataset
 
 
@@ -44,7 +71,7 @@ class TestCIFAR10Dataset:
 
 
 @pytest.fixture
-def data_loader():
+def data_loader(scope="package"):
     yield DataLoaderWrapper
 
 
