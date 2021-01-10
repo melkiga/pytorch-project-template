@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from torchvision import models
 
@@ -31,25 +32,26 @@ class OmniModel(nn.Module):
             raise ValueError(f"Invalid {model_arch = }. Select from: {model_names}.")
         else:
             self.pretrained = pretrained
+            temp_model = getattr(models, model_arch)(pretrained=pretrained)
+            features = list(temp_model.children())
             if num_classes is None and self.pretrained is not None:
                 self.num_classes = 1000
             elif num_classes is not None:
                 self.num_classes = num_classes
+                in_features = features.pop(-1).in_features
+                features.append(nn.Linear(in_features, self.num_classes))
             elif num_classes is None and self.pretrained is None:
                 raise ValueError(
                     f"Must either load a pretrained model or select the number of outputs for the last layer, i.e. set the num_classes variable."
                 )
-            temp_model = getattr(models, model_arch)(pretrained=pretrained)
-            features = list(temp_model.children())
-            in_features = features.pop(-1).in_features
-            features.append(nn.Linear(in_features, self.num_classes))
+
             self.layers = nn.Sequential(*features)
         # self.layers = nn.ModuleList(list(network.modules())[1:])
         # TODO: deal with loading pretrained weights from disk
         # self.criterions = criterions or {}
         # self.metrics = metrics or {}
         if device is None:
-            self.device = f"cuda:" + 0 if torch.cuda.is_available() else "cpu"
+            self.device = f"cuda:{0}" if torch.cuda.is_available() else "cpu"
         self.is_cuda = False
         # self.eval()
 
