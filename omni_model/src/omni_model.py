@@ -56,8 +56,10 @@ class OmniModel(nn.Module):
         # self.eval()
 
     def forward(self, x):
-        for layer in self.layers:
+        for layer in self.layers[:-1]:
             x = layer(x)
+        x = torch.flatten(x, 1)
+        x = self.layers[-1](x)
         return x
 
     def eval(self):
