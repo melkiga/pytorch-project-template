@@ -46,6 +46,6 @@ python -m omni_model.src.omniscient_cli download-data --dataset-root "./data/cif
 ```
 
 ```bash
-python -m omni_model.src.omniscient_cli train --model-arch resnet18 --dataset-name CIFAR10 --data-split '(100,0,0)' --subset-fraction 0.1 --batch-size 8 --num-workers 8 --pretrained
+python -m omni_model.src.omniscient_cli train --model-arch resnet18 --dataset-name CIFAR10 --data-split '(100,0,0)' --subset-fraction 0.1 --batch-size 8 --num-workers 8 --pretrained  --optimizer "SGD" --learning-rate 0.001 --num-epochs 1
 ```
 
