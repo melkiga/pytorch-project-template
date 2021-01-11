@@ -1,23 +1,14 @@
 import os
 import sys
 import json
+import pathlib
 import inspect
 import datetime
-import collections
+import collections.abc as collections
+from omni_model import REPO_ROOT
 
 
 class Logger:
-    """The Logger class is a singleton. It contains all the utilities
-    for logging variables in a key-value dictionary.
-    It can also be considered as a replacement for the print function.
-    .. code-block:: python
-        Logger(dir_logs='logs/mnist')
-        Logger().log_value('train_epoch.epoch', epoch)
-        Logger().log_value('train_epoch.mean_acctop1', mean_acctop1)
-        Logger().flush() # write the logs.json
-        Logger()("Launching training procedures") # written to logs.txt
-        > [I 2018-07-23 18:58:31] ...trap/engines/engine.py.80: Launching training procedures
-    """
 
     DEBUG = -1
     INFO = 0
@@ -52,7 +43,7 @@ class Logger:
 
         @staticmethod
         def code(value):
-            return "\033[{}m".format(value)
+            return f"\033[{value}m"
 
     colorcode = {
         DEBUG: Colors.code(Colors.SKY),
@@ -63,9 +54,12 @@ class Logger:
         SYSTEM: Colors.code(Colors.WHITE + Colors.LIGHT),
     }
 
+    logging_root = REPO_ROOT / "logs"
+    if not logging_root.exists():
+        logging_root.mkdir(parents=True, exist_ok=True)
+    write = None
     compactjson = True
     log_level = None  # log level
-    dir_logs = None
     path_json = None
     path_txt = None
     file_txt = None
@@ -74,30 +68,28 @@ class Logger:
     values = {}
     max_lineno_width = 3
 
-    def __new__(cls, dir_logs=None, name="logs"):
+    def __new__(cls, write=False, name="logs"):
+        cls.write = write
         if Logger._instance is None:
             Logger._instance = object.__new__(Logger)
             Logger._instance.set_level(Logger._instance.INFO)
 
-            if dir_logs:
+            if write:
                 Logger._instance.name = name
-                Logger._instance.dir_logs = dir_logs
-                Logger._instance.path_txt = os.path.join(dir_logs, f"{name}.txt")
-                Logger._instance.file_txt = open(
-                    os.path.join(dir_logs, f"{name}.txt"), "a+"
-                )
-                Logger._instance.path_json = os.path.join(dir_logs, f"{name}.json")
+                Logger._instance.path_txt = cls.logging_root / f"{name}.txt"
+                Logger._instance.file_txt = open(cls.logging_root / f"{name}.txt", "a+")
+                Logger._instance.path_json = cls.logging_root / f"{name}.json"
                 Logger._instance.reload_json()
             else:
                 Logger._instance.log_message(
-                    "No logs files will be created (dir_logs attribute is empty)",
+                    f"No logs files will be created - {write = } flag not selected.",
                     log_level=Logger.WARNING,
                 )
 
         return Logger._instance
 
     def __call__(self, *args, **kwargs):
-        return self.log_message(*args, **kwargs, stack_displacement=2)
+        return self.log_message(*args, **kwargs)
 
     def set_level(self, log_level):
         self.log_level = log_level
@@ -110,66 +102,42 @@ class Logger:
         *message,
         log_level=INFO,
         break_line=True,
-        print_header=True,
-        stack_displacement=1,
         raise_error=True,
-        adaptive_width=True,
     ):
         if log_level < self.log_level:
             return -1
 
-        if self.dir_logs and not self.file_txt:
+        if self.write and not self.file_txt:
             raise Exception(
-                f"Critical: Log file not defined. Do you have write permissions for {self.dir_logs}?"
+                f"CRITICAL: Log file not defined. Do you have write permissions for {self.logging_root}?"
             )
 
-        caller_info = inspect.getframeinfo(inspect.stack()[stack_displacement][0])
-
+        filename = pathlib.Path(inspect.stack()[0].filename).relative_to(REPO_ROOT)
         message = " ".join([str(m) for m in list(message)])
 
-        if print_header:
-            message_header = "[{} {:%Y-%m-%d %H:%M:%S}]".format(
-                self.indicator[log_level], datetime.datetime.now()
-            )
-            filename = caller_info.filename
-            if adaptive_width:
-                # allows the lineno_width to grow when necessary
-                lineno_width = len(str(caller_info.lineno))
-                self.max_lineno_width = max(lineno_width, self.max_lineno_width)
-            else:
-                # manually fix it to 3 numbers
-                lineno_width = 3
-
-            if len(filename) > 28 - self.max_lineno_width:
-                filename = (
-                    f"...{filename[-22 - (self.max_lineno_width - lineno_width) :]}"
-                )
-
-            message_locate = f"{filename}.{caller_info.lineno}:"
-            message_logger = f"{message_header} {message_locate} {message}"
-            message_screen = f"{self.Colors.BOLD}{self.colorcode[log_level]}{message_header}{self.Colors.END} {message_locate} {message}"
-        else:
-            message_logger = message
-            message_screen = message
+        message_header = "[{} {:%Y-%m-%d %H:%M:%S}]".format(
+            self.indicator[log_level], datetime.datetime.now()
+        )
+        message_locate = f"{filename}:"
+        message_logger = f"{message_header} {message_locate} {message}"
+        message_screen = f"{self.Colors.BOLD}{self.colorcode[log_level]}{message_header}{self.Colors.END} {message_locate} {message}"
 
         if break_line:
             print(message_screen)
-            if self.dir_logs:
+            if self.write:
                 self.file_txt.write("%s\n" % message_logger)
         else:
             print(message_screen, end="")
             sys.stdout.flush()
-            if self.dir_logs:
+            if self.write:
                 self.file_txt.write(message_logger)
 
-        if self.dir_logs:
+        if self.write:
             self.file_txt.flush()
         if log_level == self.ERROR and raise_error:
             raise Exception(message)
 
-    def log_value(
-        self, name, value, stack_displacement=2, should_print=False, log_level=SUMMARY
-    ):
+    def log_value(self, name, value, hide=False, log_level=SUMMARY):
         if log_level < self.log_level:
             return -1
 
@@ -177,7 +145,7 @@ class Logger:
             self.values[name] = []
         self.values[name].append(value)
 
-        if should_print:
+        if not hide:
             if type(value) == float:
                 if int(value) == 0:
                     message = f"{name}: {value:.6f}"
@@ -185,17 +153,14 @@ class Logger:
                     message = f"{name}: {value:.2f}"
             else:
                 message = f"{name}: {value}"
-            self.log_message(
-                message, log_level=log_level, stack_displacement=stack_displacement + 1
-            )
+            self.log_message(message, log_level=log_level)
 
     def log_dict(
         self,
         group,
         dictionary,
         description="",
-        stack_displacement=2,
-        should_print=False,
+        hide=False,
         log_level=SUMMARY,
     ):
         if log_level < self.log_level:
@@ -224,52 +189,40 @@ class Logger:
                 self.perf_memory[group][key] = [dictionary[key]]
 
         self.values[group] = self.perf_memory[group]
-        if should_print:
-            self.log_dict_message(
-                group, dictionary, description, stack_displacement + 1, log_level
-            )
+        if not hide:
+            self.log_dict_message(group, dictionary, description, log_level)
         self.flush()
 
-    def log_dict_message(
-        self, group, dictionary, description="", stack_displacement=2, log_level=SUMMARY
-    ):
+    def log_dict_message(self, group, dictionary, description="", log_level=SUMMARY):
         if log_level < self.log_level:
             return -1
 
-        def print_subitem(prefix, subdictionary, stack_displacement=3):
+        def print_subitem(prefix, subdictionary):
             for key, value in sorted(subdictionary.items()):
                 message = prefix + key + ":"
                 if not isinstance(value, collections.Mapping):
                     message += " " + str(value)
-                self.log_message(
-                    message, log_level=log_level, stack_displacement=stack_displacement
-                )
+                self.log_message(message, log_level=log_level)
                 if isinstance(value, collections.Mapping):
-                    print_subitem(
-                        prefix + "  ", value, stack_displacement=stack_displacement + 1
-                    )
+                    print_subitem(prefix + "  ", value)
 
-        self.log_message(
-            "{}: {}".format(group, description),
-            log_level=log_level,
-            stack_displacement=stack_displacement,
-        )
-        print_subitem("  ", dictionary, stack_displacement=stack_displacement + 1)
+        self.log_message(f"{group}: {description}", log_level=log_level)
+        print_subitem("  ", dictionary)
 
     def reload_json(self):
-        if os.path.isfile(self.path_json):
+        if self.path_json.is_file():
             try:
                 with open(self.path_json, "r") as json_file:
                     self.values = json.load(json_file)
             except FileNotFoundError:
                 self.log_message(
-                    "json log file can not be open: {}".format(self.path_json),
+                    f"json log file can not be open: {self.path_json}",
                     log_level=self.WARNING,
                 )
 
     def flush(self):
-        if self.dir_logs:
-            self.path_tmp = self.path_json + ".tmp"
+        if self.write:
+            self.path_tmp = str(self.path_json) + ".tmp"
             try:
                 with open(self.path_tmp, "w") as json_file:
                     if self.compactjson:
