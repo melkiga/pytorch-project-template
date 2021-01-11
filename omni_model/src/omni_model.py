@@ -84,10 +84,13 @@ class OmniModel(nn.Module):
                 copied to that device
         """
         self.is_cuda = True
+        if type(device) == int:
+            device = torch.device(f"cuda:{device}")
         self.device = device
         return self._apply(lambda t: t.cuda(device))
 
     def cpu(self):
         """Moves all model parameters and buffers to the CPU."""
         self.is_cuda = False
+        self.device = torch.device("cpu")
         return self._apply(lambda t: t.cpu())
