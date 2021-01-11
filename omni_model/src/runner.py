@@ -83,7 +83,7 @@ def run(
 
     # setup metrics
 
-    # trainer.tune()
+    trainer.tune()
 
     # TODO: set up a visualizer for pretty plots
 

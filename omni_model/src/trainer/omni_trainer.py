@@ -1,18 +1,19 @@
 import time
 import torch
 from omni_model.src.trainer.base_trainer import BaseTrainer
+from omni_model.src.data.datasets import DataLoaderWrapper
 
 
 class OmniTrainer(BaseTrainer):
     def __init__(
         self,
         model,
-        optimizer=None,
-        criterion=None,
-        data_loaders=None,
+        optimizer: torch.optim.Optimizer,
+        criterion: torch.nn.modules.loss,
+        data_loaders: DataLoaderWrapper,
+        num_epochs: int,
         log_interval=None,
         lr_scheduler=None,
-        num_epochs=None,
     ):
         super().__init__(
             model,
@@ -37,20 +38,24 @@ class OmniTrainer(BaseTrainer):
             # TODO: logging something
 
     def train_step(self, images, labels):
+        # update gradients
+        self.optimizer.zero_grad()
+
         # predict
         outputs = self.model(images)
+        _, preds = torch.max(outputs, 1)
 
         # Loss function
         losses = self.get_loss(outputs, labels)
         loss = losses.item()
 
-        # update gradients
-        self.optimizer.zero_grad()
         losses.backward()
         self.optimizer.step()
 
-    def get_loss(self):
-        if torch.cuda.is_available():
+        print(torch.sum(preds == labels.data))
+
+    def get_loss(self, pred, label):
+        if self.model.is_cuda:
             self.criterion.cuda()
         return self.criterion(pred, label)
 
