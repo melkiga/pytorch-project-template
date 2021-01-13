@@ -1,0 +1,33 @@
+{
+    "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+    "python.autoComplete.extraPaths": [
+        "./"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "${workspaceFolder}/.venv/bin/black",
+    "python.formatting.blackArgs": [
+        "--line-length",
+        "120",
+    ],
+    "autoDocstring.docstringFormat": "google",
+    "autoDocstring.generateDocstringOnEnter": true,
+    "autoDocstring.startOnNewLine": false,
+    "autoDocstring.guessTypes": true,
+    "pythonTestExplorer.testFramework": "pytest",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
+    "python.testing.cwd": "${workspaceFolder}",
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.testing.pytestArgs": [
+        "${workspaceFolder}/morpheus/tests",
+        "--disable-warnings",
+        "-s"
+    ],
+    "python.workspaceSymbols.exclusionPatterns": [
+        "**/site-packages/**",
+    ],
+}
