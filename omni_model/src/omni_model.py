@@ -1,3 +1,4 @@
+from typing import Optional
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -25,12 +26,15 @@ class OmniModel(nn.Module):
         if model_arch not in model_names:
             raise ValueError(f"Invalid {model_arch = }. Select from: {model_names}.")
         else:
+            # TODO: deal with loading pretrained weights from disk
             self.weights = None
             if weights:
                 weights_enum = models.get_model_weights(model_arch)
                 self.weights = weights_enum.DEFAULT
+
             temp_model = getattr(models, model_arch)(weights=self.weights)
             features = list(temp_model.children())
+
             if num_classes is None and self.weights is not None:
                 self.num_classes = len(self.weights.meta["categories"])
             elif num_classes is not None:
@@ -43,13 +47,16 @@ class OmniModel(nn.Module):
                 )
 
             self.layers = nn.Sequential(*features)
+
         # self.layers = nn.ModuleList(list(network.modules())[1:])
-        # TODO: deal with loading pretrained weights from disk
+
         # self.criterions = criterions or {}
         # self.metrics = metrics or {}
+
         if device is None:
             self.device = f"cuda:{0}" if torch.cuda.is_available() else "cpu"
         self.is_cuda = False
+
         # self.eval()
 
     def forward(self, x):
@@ -72,7 +79,7 @@ class OmniModel(nn.Module):
         for layer in self.parameters():
             layer.requires_grad = False
 
-    def cuda(self, device=None):
+    def cuda(self, device: Optional[int] = None):
         """Moves all model parameters and buffers to the GPU.
         Args:
             device_id (int, optional): if specified, all parameters will be

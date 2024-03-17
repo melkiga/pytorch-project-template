@@ -67,6 +67,8 @@ def run(
     print(trainer_options)
     optim = optimizer_options["optimizer"](params=model.parameters(), lr=optimizer_options["learning_rate"])
 
+    # TODO: set up loss function
+
     # setup training params
     trainer = OmniTrainer(
         model=model,
