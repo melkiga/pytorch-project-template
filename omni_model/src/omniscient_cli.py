@@ -63,7 +63,7 @@ def download_data(dataset_root, dataset_name, url):
     "-m",
     "--model-arch",
     type=click.Choice([*_SUPPORTED_MODEL_ARCHS], case_sensitive=True),
-    help="Model architecture name.",
+    help="Model name.",
     required=True,
 )
 @click.option(
@@ -71,6 +71,7 @@ def download_data(dataset_root, dataset_name, url):
     "--dataset-name",
     type=str,
     callback=validate_dataset_choice,
+    required=True,
     help=f"{'|'.join(_SUPPORTED_DATASETS.keys())}. Supported dataset key or path to dataset.",
 )
 @click.option(
@@ -95,11 +96,11 @@ def download_data(dataset_root, dataset_name, url):
     type=int,
     default=8,
     callback=validate_num_workers,
-    help="Number of processes to spin during data loading.",
+    help="Number of processes to use for data loading.",
 )
 @click.option("--use-gpu/--no-gpu")
 @click.option("--gpu-number", type=int, callback=validate_device)
-@click.option("--pretrained/--no-pretrained", help="Whether or not to load a model pretrained on ImageNet.")
+@click.option("--weights/--no-weights", help="Whether or not to load a model pretrained on ImageNet.")
 @click.option(
     "--optimizer", type=click.Choice([*_SUPPORTED_OPTIMIZERS], case_sensitive=True), help="Optimizer class to use."
 )
@@ -114,7 +115,7 @@ def train(
     num_workers,
     use_gpu,
     gpu_number,
-    pretrained,
+    weights,
     optimizer,
     learning_rate,
     num_epochs,
@@ -129,7 +130,7 @@ def train(
     device_options: DeviceOptions = {"use_gpu": use_gpu, "gpu_number": gpu_number}
     trainer_options: TrainerOptions = {
         "model_arch": model_arch,
-        "pretrained": pretrained,
+        "weights": weights,
         "num_epochs": num_epochs,
     }
 

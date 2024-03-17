@@ -2,14 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision import models
 
-model_names = sorted(
-    name
-    for name in models.__dict__
-    if name.islower()
-    and not name.startswith("__")
-    and callable(models.__dict__[name])
-    and ("vgg" in name or "resnet" in name)
-)
+model_names = models.list_models(module=models)
 
 
 class OmniModel(nn.Module):
@@ -18,29 +11,33 @@ class OmniModel(nn.Module):
     def __init__(
         self,
         model_arch: str,
-        num_classes=None,
-        pretrained=None,
-        device=None,
+        num_classes: int = None,
+        weights: bool = None,
+        device: int = None,
         # cuda_tf=transforms.ToCuda,
         # detach_tf=transforms.ToDetach,
         # criterions=None,
         # metrics=None, #TODO: add option for is training or not (feature extracting) https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html
-    ):
+    ) -> None:
         super(OmniModel, self).__init__()
+
         self.model_arch = model_arch
         if model_arch not in model_names:
             raise ValueError(f"Invalid {model_arch = }. Select from: {model_names}.")
         else:
-            self.pretrained = pretrained
-            temp_model = getattr(models, model_arch)(pretrained=pretrained)
+            self.weights = None
+            if weights:
+                weights_enum = models.get_model_weights(model_arch)
+                self.weights = weights_enum.DEFAULT
+            temp_model = getattr(models, model_arch)(weights=self.weights)
             features = list(temp_model.children())
-            if num_classes is None and self.pretrained is not None:
-                self.num_classes = 1000
+            if num_classes is None and self.weights is not None:
+                self.num_classes = len(self.weights.meta["categories"])
             elif num_classes is not None:
                 self.num_classes = num_classes
                 in_features = features.pop(-1).in_features
                 features.append(nn.Linear(in_features, self.num_classes))
-            elif num_classes is None and self.pretrained is None:
+            elif num_classes is None and self.weights is None:
                 raise ValueError(
                     f"Must either load a pretrained model or select the number of outputs for the last layer, i.e. set the num_classes variable."
                 )

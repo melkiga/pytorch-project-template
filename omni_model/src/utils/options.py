@@ -5,6 +5,7 @@ from torchvision import transforms
 _SUPPORTED_OPTIMIZERS = {"SGD": SGD, "ADAM": Adam}
 import torch
 
+
 # TODO: fill this with base option as base class
 class BaseOptions(TypedDict):
     placeholder: None
@@ -37,7 +38,7 @@ class RequiredModelOptions(TypedDict):
 
 class ModelOptions(RequiredModelOptions, total=False):
     num_classes: int
-    pretrained: Union[str, bool]
+    weights: Union[str, bool]
 
 
 class RequiredOptimizerOptions(TypedDict):

@@ -37,9 +37,7 @@ def run(
     # set torch device
     if device_options["use_gpu"]:
         torch.backends.cudnn.benchmark = True
-    device = torch.device(
-        f"cuda:{device_options['gpu_number']}" if device_options["use_gpu"] else "cpu"
-    )
+    device = torch.device(f"cuda:{device_options['gpu_number']}" if device_options["use_gpu"] else "cpu")
 
     # load the dataset and data loader
     data_loader_options: DataLoaderOptions = {}
@@ -57,7 +55,7 @@ def run(
     model_options: ModelOptions = {}
     for key in ModelOptions.__required_keys__:
         if key not in trainer_options:
-            raise ValueError("")
+            raise ValueError(f"Unknown parameter for ModelOptions {key}")
         model_options[key] = trainer_options.pop(key)
     for key in ModelOptions.__optional_keys__:
         if key in trainer_options:
@@ -66,9 +64,8 @@ def run(
     if device_options["use_gpu"]:
         model = model.cuda(device)
 
-    optim = optimizer_options["optimizer"](
-        params=model.parameters(), lr=optimizer_options["learning_rate"]
-    )
+    print(trainer_options)
+    optim = optimizer_options["optimizer"](params=model.parameters(), lr=optimizer_options["learning_rate"])
 
     # setup training params
     trainer = OmniTrainer(
