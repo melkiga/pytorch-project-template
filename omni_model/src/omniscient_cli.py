@@ -85,26 +85,23 @@ def download_data(dataset_root, dataset_name, url):
     "-f",
     "--subset-fraction",
     type=click.FloatRange(0.0, 1.0),
+    default=1.0,
     help="Percentage of dataset to load.",
 )
-@click.option("-b", "--batch-size", type=int, help="Batch size for data loader.")
+@click.option("-b", "--batch-size", default=8, type=int, help="Batch size for data loader.")
 @click.option(
     "-j",
     "--num-workers",
     type=int,
+    default=8,
     callback=validate_num_workers,
     help="Number of processes to spin during data loading.",
 )
 @click.option("--use-gpu/--no-gpu")
 @click.option("--gpu-number", type=int, callback=validate_device)
+@click.option("--pretrained/--no-pretrained", help="Whether or not to load a model pretrained on ImageNet.")
 @click.option(
-    "--pretrained/--no-pretrained",
-    help="Whether or not to load a model pretrained on ImageNet.",
-)
-@click.option(
-    "--optimizer",
-    type=click.Choice([*_SUPPORTED_OPTIMIZERS], case_sensitive=True),
-    help="Optimizer class to use.",
+    "--optimizer", type=click.Choice([*_SUPPORTED_OPTIMIZERS], case_sensitive=True), help="Optimizer class to use."
 )
 @click.option("-lr", "--learning-rate", type=float, help="Learning rate.")
 @click.option("-e", "--num-epochs", type=int, help="Learning rate.")
